@@ -210,11 +210,23 @@ antigravity-cli/
 
 ---
 
-## 📜 Legal & Безпека
+## 📜 Юридичний статус та дисклеймер (Legal & Trademark Notice)
 
-*   **Офіційна документація**: [antigravity.google/docs/cli-overview](https://antigravity.google/docs/cli-overview)
-*   **Правила використання**: [antigravity.google/terms](https://antigravity.google/terms)
-*   **Політика конфіденційності**: [policies.google.com/privacy](https://policies.google.com/privacy)
+*   **Офіційні посилання**: [Офіційний репозиторій документації](https://github.com/google-antigravity/antigravity-cli) · [Офіційна кодова база CLI](https://github.com/google-gemini/gemini-cli) · [Офіційний сайт](https://antigravity.google)
+*   **Правила використання**: [antigravity.google/terms](https://antigravity.google/terms) · [policies.google.com/privacy](https://policies.google.com/privacy)
+
+> [!IMPORTANT]
+> **Правовий статус форку:**
+> Цей репозиторій є незалежною некомерційною копією (Community Fork) оригінального клієнта. Він **не є** офіційним продуктом компанії Google LLC. Google LLC не несе відповідальності за працездатність, модифікації або безпеку цього форку.
+> 
+> **Ліцензування та авторські права:**
+> Оригінальне програмне забезпечення розповсюджується під ліцензією [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). Весь оригінальний код є інтелектуальною власністю **Copyright © 2025 Google LLC**.
+> 
+> **Використання торгових марок:**
+> Назва "Antigravity CLI" та пов'язані логотипи використовуються в межах дозволеного використання (Customary Use) виключно для опису походження, сумісності та функціонального призначення програмного забезпечення. Цей проєкт не претендує на володіння будь-якими торговими марками Google LLC.
+> 
+> **Обмеження відповідальності (Disclaimer of Warranty):**
+> Програмне забезпечення надається на умовах «ЯК Є» (AS IS), БЕЗ БУДЬ-ЯКИХ ГАРАНТІЙ, явних чи неявних. Ви берете на себе всю відповідальність та ризики, пов'язані з його використанням.
 
 > [!CAUTION]
 > ШІ-агенти для кодування працюють автономно. Завжди уважно перевіряйте пропоновані diff-блоки та команди перед підтвердженням виконання, особливо при роботі з системними файлами чи конфігурацією фаєрволу.
