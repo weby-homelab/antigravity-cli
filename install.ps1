@@ -60,19 +60,58 @@ function Invoke-Install {
         if ($isSourced) { throw "Fatal: Unsupported CPU architecture." } else { $script:installExitCode = 1; return }
     }
 
-    # 2. Download Manifest
-    try {
-        $manifest = Invoke-RestMethod -Uri "$DOWNLOAD_BASE_URL/manifests/$platform.json"
-        $version = $manifest.version
-        $url = $manifest.url
-        $sha512 = $manifest.sha512
-    } catch {
-        Write-Error "Fatal: Failed to download release manifest from $DOWNLOAD_BASE_URL/manifests/$platform.json. Network or DNS issue?" -ErrorAction Continue
-        Write-Error "Error details: $_" -ErrorAction Continue
-        if ($isSourced) { throw "Fatal: Failed to download manifest." } else { $script:installExitCode = 1; return }
+    # 2. Query Manifest (Local or Remote)
+    $localMode = $false
+    $scriptDir = $null
+    if ($hasPath) {
+        $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    }
+    if ([string]::IsNullOrEmpty($scriptDir) -and (Test-Path "Variable:PSScriptRoot")) {
+        $scriptDir = $PSScriptRoot
+    }
+    if ([string]::IsNullOrEmpty($scriptDir)) {
+        $scriptDir = Get-Location
     }
 
-    # 3. Download Binary Staging & Verify
+    $localManifest = Join-Path $scriptDir "packages\manifests\$platform.json"
+    if (Test-Path $localManifest) {
+        try {
+            $manifestContent = Get-Content -Raw -Path $localManifest
+            # Simple regex parser to avoid ConvertFrom-Json dependency/failure issues
+            $version = if ($manifestContent -match '"version"\s*:\s*"([^"]+)"') { $Matches[1] } else { "" }
+            $url = if ($manifestContent -match '"url"\s*:\s*"([^"]+)"') { $Matches[1] } else { "" }
+            $sha512 = if ($manifestContent -match '"sha512"\s*:\s*"([^"]+)"') { $Matches[1] } else { "" }
+            
+            if ($url -ne "" -and $sha512 -ne "") {
+                $archiveFilename = Split-Path -Leaf $url
+                $localArchive = Join-Path $scriptDir "packages\binaries\$archiveFilename"
+                if (Test-Path $localArchive) {
+                    $localMode = $true
+                    Write-Host "✓ Local package files found for platform $platform. Installing offline..."
+                }
+            }
+        } catch {
+            # Ignore and fallback
+        }
+    }
+
+    if (-not $localMode) {
+        Write-Host "⠋ Querying release repository..."
+        try {
+            $manifest = Invoke-RestMethod -Uri "$DOWNLOAD_BASE_URL/manifests/$platform.json"
+            $version = $manifest.version
+            $url = $manifest.url
+            $sha512 = $manifest.sha512
+        } catch {
+            Write-Error "Fatal: Failed to download release manifest from $DOWNLOAD_BASE_URL/manifests/$platform.json. Network or DNS issue?" -ErrorAction Continue
+            Write-Error "Error details: $_" -ErrorAction Continue
+            if ($isSourced) { throw "Fatal: Failed to download manifest." } else { $script:installExitCode = 1; return }
+        }
+    }
+
+    Write-Host "✓ Latest available version: $version"
+
+    # 3. Download/Stage Binary & Verify Checksum
     $stagingDir = Join-Path $env:LOCALAPPDATA "antigravity\staging"
     try {
         if (-not (Test-Path $stagingDir)) { New-Item -ItemType Directory -Path $stagingDir | Out-Null }
@@ -81,16 +120,31 @@ function Invoke-Install {
         Write-Error "Error details: $_" -ErrorAction Continue
         if ($isSourced) { throw "Fatal: Failed to create staging directory." } else { $script:installExitCode = 1; return }
     }
-    $localStagingPayload = Join-Path $stagingDir "agy.exe"
+
+    $isZip = $url.EndsWith(".zip")
+    $payloadName = if ($isZip) { "agy.zip" } else { "agy.exe" }
+    $localStagingPayload = Join-Path $stagingDir $payloadName
     $script:stagingPayload = $localStagingPayload
 
-    $ProgressPreference = 'SilentlyContinue'
-    try {
-        Invoke-WebRequest -Uri $url -OutFile $localStagingPayload
-    } catch {
-        Write-Error "Fatal: Failed to download binary from $url. Network or DNS issue?" -ErrorAction Continue
-        Write-Error "Error details: $_" -ErrorAction Continue
-        if ($isSourced) { throw "Fatal: Failed to download binary." } else { $script:installExitCode = 1; return }
+    if ($localMode) {
+        Write-Host "⠋ Staging local release package..."
+        try {
+            Copy-Item -Path $localArchive -Destination $localStagingPayload -Force
+        } catch {
+            Write-Error "Fatal: Failed to copy local archive from $localArchive to $localStagingPayload." -ErrorAction Continue
+            Write-Error "Error details: $_" -ErrorAction Continue
+            if ($isSourced) { throw "Fatal: Failed to copy local archive." } else { $script:installExitCode = 1; return }
+        }
+    } else {
+        Write-Host "⠋ Downloading release package..."
+        $ProgressPreference = 'SilentlyContinue'
+        try {
+            Invoke-WebRequest -Uri $url -OutFile $localStagingPayload
+        } catch {
+            Write-Error "Fatal: Failed to download binary from $url. Network or DNS issue?" -ErrorAction Continue
+            Write-Error "Error details: $_" -ErrorAction Continue
+            if ($isSourced) { throw "Fatal: Failed to download binary." } else { $script:installExitCode = 1; return }
+        }
     }
     $hash = $null
     if ($ExecutionContext.SessionState.LanguageMode -ne 'ConstrainedLanguage') {
@@ -122,7 +176,15 @@ function Invoke-Install {
     # 4. Place Binary & Unblock
     try {
         if (-not (Test-Path $TARGET_DIR)) { New-Item -ItemType Directory -Path $TARGET_DIR | Out-Null }
-        Copy-Item -Path $localStagingPayload -Destination $binaryPath -Force
+        if ($isZip) {
+            Write-Host "⠋ Extracting binary from ZIP archive..."
+            Expand-Archive -Path $localStagingPayload -DestinationPath $stagingDir -Force
+            $extractedBinary = Join-Path $stagingDir "cli_windows_x64.exe"
+            Copy-Item -Path $extractedBinary -Destination $binaryPath -Force
+            Remove-Item -Path $extractedBinary -Force -ErrorAction SilentlyContinue
+        } else {
+            Copy-Item -Path $localStagingPayload -Destination $binaryPath -Force
+        }
         Unblock-File -Path $binaryPath -ErrorAction SilentlyContinue
     } catch {
         Write-Error "Write Error: Permission denied or failed to write binary to $binaryPath." -ErrorAction Continue
