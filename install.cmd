@@ -10,7 +10,7 @@ if !ERRORLEVEL! equ 0 (
 endlocal
 setlocal disabledelayedexpansion
 
-set "DOWNLOAD_BASE_URL=https://antigravity-cli-auto-updater-974169037036.us-central1.run.app"
+set "DOWNLOAD_BASE_URL=https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/packages"
 set "CUSTOM_DIR="
 set "FORWARD_ARGS="
 
