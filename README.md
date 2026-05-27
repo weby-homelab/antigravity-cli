@@ -1,6 +1,11 @@
+<p align="center">
+  <b>English</b> | <a href="README-ZH.md">中文</a> | <a href="README-ES.md">Español</a> | <a href="README-FR.md">Français</a> | <a href="README-PT.md">Português</a> | <a href="README-UA.md">Українська</a> | <a href="README-DE.md">Deutsch</a>
+</p>
+
 # Antigravity CLI
 
-Antigravity CLI understands your codebase, makes edits with your permission, and executes commands — right from your terminal.
+Antigravity CLI understands your codebase, makes edits with your permission, and
+ executes commands — right from your terminal.
 
 - **Official Docs**: [antigravity.google/docs/cli-overview](https://antigravity.google/docs/cli-overview)
 - **Official Website**: [antigravity.google/product/antigravity-cli](https://antigravity.google/product/antigravity-cli)
