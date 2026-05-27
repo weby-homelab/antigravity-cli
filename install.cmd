@@ -60,14 +60,23 @@ if /i "%PROCESSOR_ARCHITECTURE%"=="AMD64" (
 )
 
 REM 2. Query Manifest & Parse securely via pure-CMD
-set "MANIFEST_URL=!DOWNLOAD_BASE_URL!/manifests/!PLATFORM!.json"
-set "MANIFEST_PATH=!TEMP!\manifest_!RANDOM!.json"
-curl -fsSL "!MANIFEST_URL!" -o "!MANIFEST_PATH!"
-if !ERRORLEVEL! neq 0 (
-    echo Fatal: Failed to download release manifest from !MANIFEST_URL!. >&2
-    echo Please check your internet connection or firewall settings. >&2
-    if exist "!MANIFEST_PATH!" del "!MANIFEST_PATH!"
-    exit /b 1
+set "LOCAL_MODE=false"
+set "SCRIPT_DIR=%~dp0"
+set "LOCAL_MANIFEST=!SCRIPT_DIR!packages\manifests\!PLATFORM!.json"
+
+if exist "!LOCAL_MANIFEST!" (
+    set "MANIFEST_PATH=!LOCAL_MANIFEST!"
+    set "LOCAL_MODE=true"
+) else (
+    set "MANIFEST_URL=!DOWNLOAD_BASE_URL!/manifests/!PLATFORM!.json"
+    set "MANIFEST_PATH=!TEMP!\manifest_!RANDOM!.json"
+    curl -fsSL "!MANIFEST_URL!" -o "!MANIFEST_PATH!"
+    if !ERRORLEVEL! neq 0 (
+        echo Fatal: Failed to download release manifest from !MANIFEST_URL!. >&2
+        echo Please check your internet connection or firewall settings. >&2
+        if exist "!MANIFEST_PATH!" del "!MANIFEST_PATH!"
+        exit /b 1
+    )
 )
 
 :: Securely extract manifest values line-by-line (immune to minified JSON and spaces)
@@ -109,14 +118,28 @@ if defined RAW_LINE (
     for /f "tokens=1" %%A in ("!CLEAN_LINE!") do set "SHA512=%%A"
     set "SHA512=!SHA512:,=!"
 )
-del "!MANIFEST_PATH!"
+
+if not "!LOCAL_MODE!"=="true" (
+    del "!MANIFEST_PATH!"
+)
 
 if "!URL!"=="" (
     echo Fatal: Failed to download or parse release manifest. >&2
     exit /b 1
 )
 
-REM 3. Download & Verify Checksum
+if "!LOCAL_MODE!"=="true" (
+    for /f "delims=" %%F in ("!URL!") do set "ARCHIVE_NAME=%%~nxF"
+    if /i "!ARCHIVE_NAME!"=="cli_windows_x64.exe" set "ARCHIVE_NAME=cli_windows_x64.zip"
+    set "LOCAL_ARCHIVE=!SCRIPT_DIR!packages\binaries\!ARCHIVE_NAME!"
+    if not exist "!LOCAL_ARCHIVE!" (
+        echo Fatal: Local archive !LOCAL_ARCHIVE! not found. >&2
+        exit /b 1
+    )
+    echo ✓ Local package files found for platform !PLATFORM!. Installing offline...
+)
+
+REM 3. Download/Stage & Verify Checksum
 set "STAGING_DIR=!LOCALAPPDATA!\antigravity\staging"
 if not exist "!STAGING_DIR!" mkdir "!STAGING_DIR!"
 if not exist "!STAGING_DIR!" (
@@ -124,15 +147,33 @@ if not exist "!STAGING_DIR!" (
     echo Please check write permissions for !LOCALAPPDATA!. >&2
     exit /b 1
 )
-set "STAGING_PAYLOAD=!STAGING_DIR!\agy.exe"
 
-curl -fsSL "!URL!" -o "!STAGING_PAYLOAD!"
-if !ERRORLEVEL! neq 0 (
-    echo Fatal: Failed to download release binary from !URL!. >&2
-    echo Please check your internet connection or firewall settings. >&2
-    if exist "!STAGING_PAYLOAD!" del "!STAGING_PAYLOAD!"
-    exit /b 1
+set "IS_ZIP=false"
+if /i "!URL:~-4!"==".zip" set "IS_ZIP=true"
+if defined LOCAL_ARCHIVE (
+    if /i "!LOCAL_ARCHIVE:~-4!"==".zip" set "IS_ZIP=true"
 )
+
+if "!IS_ZIP!"=="true" (
+    set "STAGING_PAYLOAD=!STAGING_DIR!\agy.zip"
+) else (
+    set "STAGING_PAYLOAD=!STAGING_DIR!\agy.exe"
+)
+
+if "!LOCAL_MODE!"=="true" (
+    echo ⠋ Staging local release package...
+    copy /y "!LOCAL_ARCHIVE!" "!STAGING_PAYLOAD!" >nul
+) else (
+    echo ⠋ Downloading release package...
+    curl -fsSL "!URL!" -o "!STAGING_PAYLOAD!"
+    if !ERRORLEVEL! neq 0 (
+        echo Fatal: Failed to download release binary from !URL!. >&2
+        echo Please check your internet connection or firewall settings. >&2
+        if exist "!STAGING_PAYLOAD!" del "!STAGING_PAYLOAD!"
+        exit /b 1
+    )
+)
+
 if "!SHA512!"=="" (
     echo Security Halt: Checksum missing in manifest. >&2
     del "!STAGING_PAYLOAD!" & exit /b 1
@@ -148,6 +189,7 @@ if /i not "!ACTUAL!"=="!SHA512!" (
     echo Security Halt: Checksum verification failed. The file may be corrupted or compromised. >&2
     del "!STAGING_PAYLOAD!" & exit /b 1
 )
+echo ✓ Release package checksum verified.
 
 REM 4. Place Binary & Unblock
 if not exist "!TARGET_DIR!" mkdir "!TARGET_DIR!"
@@ -157,12 +199,30 @@ if not exist "!TARGET_DIR!" (
     del "!STAGING_PAYLOAD!"
     exit /b 1
 )
-copy /y "!STAGING_PAYLOAD!" "!BINARY_PATH!" >nul
-if !ERRORLEVEL! neq 0 (
-    echo Fatal: Failed to write binary to destination at !BINARY_PATH!. >&2
-    echo Please check directory permissions or if the file is locked, e.g. if 'agy.exe' is currently running. >&2
-    del "!STAGING_PAYLOAD!"
-    exit /b 1
+
+if "!IS_ZIP!"=="true" (
+    echo ⠋ Extracting binary from ZIP archive...
+    powershell -NoProfile -Command "Expand-Archive -Path '!STAGING_PAYLOAD!' -DestinationPath '!STAGING_DIR!' -Force"
+    if !ERRORLEVEL! neq 0 (
+        echo Fatal: Failed to extract ZIP package. >&2
+        del "!STAGING_PAYLOAD!"
+        exit /b 1
+    )
+    copy /y "!STAGING_DIR!\cli_windows_x64.exe" "!BINARY_PATH!" >nul
+    if !ERRORLEVEL! neq 0 (
+        echo Fatal: Failed to copy extracted binary. >&2
+        del "!STAGING_PAYLOAD!"
+        exit /b 1
+    )
+    del "!STAGING_DIR!\cli_windows_x64.exe" >nul 2>&1
+) else (
+    copy /y "!STAGING_PAYLOAD!" "!BINARY_PATH!" >nul
+    if !ERRORLEVEL! neq 0 (
+        echo Fatal: Failed to write binary to destination at !BINARY_PATH!. >&2
+        echo Please check directory permissions or if the file is locked, e.g. if 'agy.exe' is currently running. >&2
+        del "!STAGING_PAYLOAD!"
+        exit /b 1
+    )
 )
 ping -n 2 127.0.0.1 >nul 2>&1
 del "!STAGING_PAYLOAD!"
