@@ -95,7 +95,7 @@ function Invoke-Install {
         }
     }
 
-    if (-not $localMode) {
+    if ($url -eq "" -or $sha512 -eq "") {
         Write-Host "⠋ Querying release repository..."
         try {
             $manifest = Invoke-RestMethod -Uri "$DOWNLOAD_BASE_URL/manifests/$platform.json"
