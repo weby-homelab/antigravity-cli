@@ -5,10 +5,8 @@ agy
 *.tar.gz
 *.exe
 
-# Allow packages
-!packages/**/*.tar.gz
-!packages/**/*.exe
-!packages/**/*.zip
+# Ignore packages binaries
+packages/binaries/
 
 # OS files
 .DS_Store
