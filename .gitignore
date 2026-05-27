@@ -1,0 +1,21 @@
+# Binaries
+bin/
+antigravity
+agy
+*.tar.gz
+*.exe
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Logs
+*.log
