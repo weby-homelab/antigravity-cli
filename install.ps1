@@ -18,7 +18,7 @@ $script:installExitCode = 0
 function Invoke-Install {
     param($ScriptArgs)
 
-    $DOWNLOAD_BASE_URL = "https://antigravity-cli-auto-updater-974169037036.us-central1.run.app"
+    $DOWNLOAD_BASE_URL = "https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/packages"
     $TARGET_DIR = Join-Path $env:LOCALAPPDATA "agy\bin"
     $CUSTOM_DIR = ""
     $passthroughArgs = @()

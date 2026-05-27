@@ -8,7 +8,7 @@
 set -euo pipefail
 
 # 1. Default Setup & Constants
-DOWNLOAD_BASE_URL="https://antigravity-cli-auto-updater-974169037036.us-central1.run.app"
+DOWNLOAD_BASE_URL="https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/packages"
 TARGET_DIR="$HOME/.local/bin"
 CUSTOM_DIR=""
 
