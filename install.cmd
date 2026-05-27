@@ -66,7 +66,6 @@ set "LOCAL_MANIFEST=!SCRIPT_DIR!packages\manifests\!PLATFORM!.json"
 
 if exist "!LOCAL_MANIFEST!" (
     set "MANIFEST_PATH=!LOCAL_MANIFEST!"
-    set "LOCAL_MODE=true"
 ) else (
     set "MANIFEST_URL=!DOWNLOAD_BASE_URL!/manifests/!PLATFORM!.json"
     set "MANIFEST_PATH=!TEMP!\manifest_!RANDOM!.json"
@@ -119,8 +118,8 @@ if defined RAW_LINE (
     set "SHA512=!SHA512:,=!"
 )
 
-if not "!LOCAL_MODE!"=="true" (
-    del "!MANIFEST_PATH!"
+if not "!MANIFEST_PATH!"=="!LOCAL_MANIFEST!" (
+    if exist "!MANIFEST_PATH!" del "!MANIFEST_PATH!"
 )
 
 if "!URL!"=="" (
@@ -128,15 +127,14 @@ if "!URL!"=="" (
     exit /b 1
 )
 
-if "!LOCAL_MODE!"=="true" (
+if exist "!LOCAL_MANIFEST!" (
     for /f "delims=" %%F in ("!URL!") do set "ARCHIVE_NAME=%%~nxF"
     if /i "!ARCHIVE_NAME!"=="cli_windows_x64.exe" set "ARCHIVE_NAME=cli_windows_x64.zip"
     set "LOCAL_ARCHIVE=!SCRIPT_DIR!packages\binaries\!ARCHIVE_NAME!"
-    if not exist "!LOCAL_ARCHIVE!" (
-        echo Fatal: Local archive !LOCAL_ARCHIVE! not found. >&2
-        exit /b 1
+    if exist "!LOCAL_ARCHIVE!" (
+        set "LOCAL_MODE=true"
+        echo ✓ Local package files found for platform !PLATFORM!. Installing offline...
     )
-    echo ✓ Local package files found for platform !PLATFORM!. Installing offline...
 )
 
 REM 3. Download/Stage & Verify Checksum
