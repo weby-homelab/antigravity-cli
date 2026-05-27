@@ -5,6 +5,11 @@ agy
 *.tar.gz
 *.exe
 
+# Allow packages
+!packages/**/*.tar.gz
+!packages/**/*.exe
+!packages/**/*.zip
+
 # OS files
 .DS_Store
 Thumbs.db
