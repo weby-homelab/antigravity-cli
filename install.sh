@@ -126,7 +126,7 @@ if [ -f "$LOCAL_MANIFEST" ]; then
     fi
 fi
 
-if [ "$LOCAL_MODE" = false ]; then
+if [ -z "$url" ] || [ -z "$sha512" ]; then
     # 4. Manifest Query & JSON Parsing (POSIX-Compliant)
     echo "⠋ Querying release repository..."
 
