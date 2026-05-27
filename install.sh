@@ -92,6 +92,16 @@ fi
 
 echo "✓ Platform detected: $platform"
 
+DOWNLOADER=""
+if command -v curl >/dev/null 2>&1; then
+    DOWNLOADER="curl"
+elif command -v wget >/dev/null 2>&1; then
+    DOWNLOADER="wget"
+else
+    echo "Fatal: Either curl or wget is required but neither is installed." >&2
+    exit 1
+fi
+
 # POSIX-compliant JSON parser (no jq or grep -o dependencies)
 parse_json_key() {
     local payload="$1"
@@ -132,16 +142,6 @@ if [ -z "$url" ] || [ -z "$sha512" ]; then
 
     # Construct Platform JSON Manifest URL
     MANIFEST_URL="$DOWNLOAD_BASE_URL/manifests/$platform.json"
-
-    DOWNLOADER=""
-    if command -v curl >/dev/null 2>&1; then
-        DOWNLOADER="curl"
-    elif command -v wget >/dev/null 2>&1; then
-        DOWNLOADER="wget"
-    else
-        echo "Fatal: Either curl or wget is required but neither is installed." >&2
-        exit 1
-    fi
 
     fetch_manifest() {
         if [ "$DOWNLOADER" = "curl" ]; then
