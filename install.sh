@@ -92,36 +92,6 @@ fi
 
 echo "✓ Platform detected: $platform"
 
-# 4. Manifest Query & JSON Parsing (POSIX-Compliant)
-echo "⠋ Querying release repository..."
-
-# Construct Platform JSON Manifest URL
-MANIFEST_URL="$DOWNLOAD_BASE_URL/manifests/$platform.json"
-
-DOWNLOADER=""
-if command -v curl >/dev/null 2>&1; then
-    DOWNLOADER="curl"
-elif command -v wget >/dev/null 2>&1; then
-    DOWNLOADER="wget"
-else
-    echo "Fatal: Either curl or wget is required but neither is installed." >&2
-    exit 1
-fi
-
-fetch_manifest() {
-    if [ "$DOWNLOADER" = "curl" ]; then
-        curl -fsSL "$1"
-    else
-        wget -q -O - "$1"
-    fi
-}
-
-manifest_json=$(fetch_manifest "$MANIFEST_URL" 2>/dev/null || true)
-if [ -z "$manifest_json" ]; then
-    echo "Fatal: Could not connect to the release server to download the manifest. Please check your internet connection or firewall settings." >&2
-    exit 1
-fi
-
 # POSIX-compliant JSON parser (no jq or grep -o dependencies)
 parse_json_key() {
     local payload="$1"
@@ -129,13 +99,72 @@ parse_json_key() {
     echo "$payload" | sed -n 's/.*"'"$key"'"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p'
 }
 
-version=$(parse_json_key "$manifest_json" "version")
-url=$(parse_json_key "$manifest_json" "url")
-sha512=$(parse_json_key "$manifest_json" "sha512")
+# Check for local installer package files
+LOCAL_MODE=false
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOCAL_MANIFEST="$SCRIPT_DIR/packages/manifests/$platform.json"
 
-if [ -z "$url" ] || [ -z "$sha512" ]; then
-    echo "Fatal: Failed to parse release manifest. The manifest may be corrupted or malformed." >&2
-    exit 1
+version=""
+url=""
+sha512=""
+manifest_json=""
+
+if [ -f "$LOCAL_MANIFEST" ]; then
+    manifest_json=$(cat "$LOCAL_MANIFEST" 2>/dev/null || true)
+    if [ -n "$manifest_json" ]; then
+        version=$(parse_json_key "$manifest_json" "version")
+        url=$(parse_json_key "$manifest_json" "url")
+        sha512=$(parse_json_key "$manifest_json" "sha512")
+        if [ -n "$url" ] && [ -n "$sha512" ]; then
+            archive_filename=$(basename "$url")
+            LOCAL_ARCHIVE="$SCRIPT_DIR/packages/binaries/$archive_filename"
+            if [ -f "$LOCAL_ARCHIVE" ]; then
+                LOCAL_MODE=true
+                echo "✓ Local package files found for platform $platform. Installing offline..."
+            fi
+        fi
+    fi
+fi
+
+if [ "$LOCAL_MODE" = false ]; then
+    # 4. Manifest Query & JSON Parsing (POSIX-Compliant)
+    echo "⠋ Querying release repository..."
+
+    # Construct Platform JSON Manifest URL
+    MANIFEST_URL="$DOWNLOAD_BASE_URL/manifests/$platform.json"
+
+    DOWNLOADER=""
+    if command -v curl >/dev/null 2>&1; then
+        DOWNLOADER="curl"
+    elif command -v wget >/dev/null 2>&1; then
+        DOWNLOADER="wget"
+    else
+        echo "Fatal: Either curl or wget is required but neither is installed." >&2
+        exit 1
+    fi
+
+    fetch_manifest() {
+        if [ "$DOWNLOADER" = "curl" ]; then
+            curl -fsSL "$1"
+        else
+            wget -q -O - "$1"
+        fi
+    }
+
+    manifest_json=$(fetch_manifest "$MANIFEST_URL" 2>/dev/null || true)
+    if [ -z "$manifest_json" ]; then
+        echo "Fatal: Could not connect to the release server to download the manifest. Please check your internet connection or firewall settings." >&2
+        exit 1
+    fi
+
+    version=$(parse_json_key "$manifest_json" "version")
+    url=$(parse_json_key "$manifest_json" "url")
+    sha512=$(parse_json_key "$manifest_json" "sha512")
+
+    if [ -z "$url" ] || [ -z "$sha512" ]; then
+        echo "Fatal: Failed to parse release manifest. The manifest may be corrupted or malformed." >&2
+        exit 1
+    fi
 fi
 
 echo "✓ Latest available version: $version"
@@ -176,10 +205,15 @@ download_file() {
     fi
 }
 
-echo "⠋ Downloading release package..."
-if ! download_file "$url" "$staging_payload"; then
-    echo "Fatal: Failed to download release package from $url. Please check your internet connection or firewall settings." >&2
-    exit 1
+if [ "$LOCAL_MODE" = true ]; then
+    echo "⠋ Staging local release package..."
+    cp "$LOCAL_ARCHIVE" "$staging_payload"
+else
+    echo "⠋ Downloading release package..."
+    if ! download_file "$url" "$staging_payload"; then
+        echo "Fatal: Failed to download release package from $url. Please check your internet connection or firewall settings." >&2
+        exit 1
+    fi
 fi
 
 # Compute OS-Specific SHA512 Checksum
@@ -191,10 +225,10 @@ else
 fi
 
 if [ "$actual_hash" != "$sha512" ]; then
-    echo "Security Halt: The downloaded payload checksum does not match the manifest. The file may be corrupted or compromised. Installation aborted." >&2
+    echo "Security Halt: The payload checksum does not match the manifest. The file may be corrupted or compromised. Installation aborted." >&2
     exit 1
 fi
-echo "✓ Download complete and checksum verified."
+echo "✓ Release package checksum verified."
 
 # 6. Direct Binary Extraction & Write Permission Validation
 if ! mkdir -p "$TARGET_DIR" 2>/dev/null; then
