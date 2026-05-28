@@ -77,8 +77,8 @@ install.cmd
 
 ## ⚙️ Konfiguration
 
-### 1. Projektkonfiguration (`.antigravity.md`)
-Erstellen Sie eine `.antigravity.md`-Datei im Stammverzeichnis Ihres Projekts, um dem KI-Agenten spezifischen Kontext und Entwicklungsregeln bereitzustellen:
+### 1. Projektkonfiguration (`GEMINI.md`)
+Erstellen Sie eine `GEMINI.md`-Datei im Stammverzeichnis Ihres Projekts, um dem KI-Agenten spezifischen Kontext und Entwicklungsregeln bereitzustellen:
 
 ```markdown
 # Projektkontext
@@ -100,11 +100,11 @@ Die globale Einstellungsdatei steuert Berechtigungen zur Tool-Ausführung, Statu
   "toolPermission": "always-proceed",
   "statusLine": {
     "enabled": true,
-    "command": "/root/.gemini/antigravity-cli/statusline.sh"
+    "command": "/home/user/.gemini/antigravity-cli/statusline.sh"
   },
   "title": {
     "enabled": true,
-    "command": "/root/.gemini/antigravity-cli/title.sh"
+    "command": "/home/user/.gemini/antigravity-cli/title.sh"
   },
   "mcpServers": {
     "github": {
@@ -115,18 +115,20 @@ Die globale Einstellungsdatei steuert Berechtigungen zur Tool-Ausführung, Statu
 }
 ```
 
-### 3. Spezialisierte Agenten (`~/.antigravity/agents/`)
-Sie können benutzerdefinierte Rollen und Anweisungen für KI-Agenten im YAML-Format beschreiben:
+### 3. Spezialisierte Agenten
+Sie können benutzerdefinierte Rollen und Anweisungen für KI-Agenten im JSON-Format beschreiben. Jeder Agent muss sein eigenes Verzeichnis haben, das eine `agent.json`-Datei enthält:
 
-```yaml
-# ~/.antigravity/agents/security-reviewer.yaml
-name: security-reviewer
-description: "Analysiert Code vor dem Commit auf Schwachstellen"
-instructions: |
-  Änderungen überprüfen auf:
-  - OWASP Top 10 Schwachstellen
-  - Durchsickern von API-Schlüsseln oder Geheimnissen
-  - Richtigkeit der Firewall-/nftables-Konfiguration
+- **Globale Agenten (Linux/Unix)**: `~/.gemini/antigravity-cli/agents/{agent_name}/agent.json`
+- **Globale Agenten (macOS)**: `~/Library/Application Support/antigravity-cli/agents/{agent_name}/agent.json`
+- **Globale Agenten (Windows)**: `%APPDATA%\antigravity-cli\agents\{agent_name}\agent.json`
+- **Lokale Agenten (Projektarbeitsbereich)**: `{workspace_root}/.agents/agents/{agent_name}/agent.json`
+
+```json
+{
+  "name": "security-reviewer",
+  "description": "Analysiert Code vor dem Commit auf Schwachstellen",
+  "instructions": "Änderungen überprüfen auf:\n- OWASP Top 10 Schwachstellen\n- Durchsickern von API-Schlüsseln oder Geheimnissen\n- Richtigkeit der Firewall-/nftables-Konfiguration"
+}
 ```
 
 ---
@@ -171,11 +173,7 @@ agy plugin list                  # Installierte Plugins auflisten
 
 ### Schritte für einen schnellen Übergang
 1. Installieren Sie den neuen Client: `curl -fsSL https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/install.sh | bash`
-2. Benennen Sie lokale Konfigurationsdateien um:
-   ```bash
-   mv GEMINI.md .antigravity.md
-   mv ~/.gemini/agents/ ~/.antigravity/agents/
-   ```
+2. Migrieren Sie lokale benutzerdefinierte Agentenkonfigurationsdateien (konvertieren Sie z. B. benutzerdefinierte Agenten von YAML in `~/.gemini/agents/` in JSON-Dateien unter `~/.gemini/antigravity-cli/agents/{agent_name}/agent.json`).
 3. Aktualisieren Sie CI/CD-Konfigurationen in GitHub Actions und ersetzen Sie `gemini`-Aufrufe durch `agy`.
 4. Deinstallieren Sie die alte Bibliothek: `npm uninstall -g @google/gemini-cli`
 
@@ -186,7 +184,7 @@ agy plugin list                  # Installierte Plugins auflisten
 | **Entwicklungsplattform** | Node.js / TypeScript | Go (Nativ kompilierte Binärdatei) |
 | **Befehlsname** | `gemini` | `agy` |
 | **Startgeschwindigkeit** | ~1.2s (Node.js-Start) | **~0.05s (sofortiger nativer Start)** |
-| **Konfigurationsdatei** | `GEMINI.md` | `.antigravity.md` |
+| **Konfigurationsdatei** | `GEMINI.md` | `GEMINI.md` |
 | **Automatische Aktualisierung** | Über `npm update` | Integrierter Selbstaktualisierungsmechanismus |
 | **Support-Status** | ⛔ EOL (18. Juni 2026) | ✅ Aktive Entwicklung (Upstream) |
 
@@ -200,7 +198,7 @@ antigravity-cli/
 ├── install.ps1          # Installer für Windows PowerShell (offline/online)
 ├── install.cmd          # Installer für Windows CMD
 ├── Makefile             # Automatisierungsziele (make install/reinstall/uninstall)
-├── .antigravity.md      # Projektkontext-Dateivorlage
+├── GEMINI.md            # Projektkontext-Dateivorlage
 ├── packages/            # Lokaler Offline-Vertrieb
 │   ├── manifests/       # Versionsmanifeste für alle Plattformen
 │   └── binaries/        # (Manuell erstellt für den Offline-Modus)

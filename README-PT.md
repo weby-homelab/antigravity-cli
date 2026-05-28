@@ -77,8 +77,8 @@ install.cmd
 
 ## ⚙️ Configuração
 
-### 1. Configuração do Projeto (`.antigravity.md`)
-Crie um arquivo `.antigravity.md` na raiz do seu projeto para fornecer contexto específico e regras de desenvolvimento ao agente de IA:
+### 1. Configuração do Projeto (`GEMINI.md`)
+Crie um arquivo `GEMINI.md` na raiz do seu projeto para fornecer contexto específico e regras de desenvolvimento ao agente de IA:
 
 ```markdown
 # Contexto do Projeto
@@ -100,11 +100,11 @@ O arquivo de configuração global controla as permissões de execução de ferr
   "toolPermission": "always-proceed",
   "statusLine": {
     "enabled": true,
-    "command": "/root/.gemini/antigravity-cli/statusline.sh"
+    "command": "/home/user/.gemini/antigravity-cli/statusline.sh"
   },
   "title": {
     "enabled": true,
-    "command": "/root/.gemini/antigravity-cli/title.sh"
+    "command": "/home/user/.gemini/antigravity-cli/title.sh"
   },
   "mcpServers": {
     "github": {
@@ -115,18 +115,20 @@ O arquivo de configuração global controla as permissões de execução de ferr
 }
 ```
 
-### 3. Agentes Especializados (`~/.antigravity/agents/`)
-Você pode descrever funções e instruções personalizadas para agentes de IA no formato YAML:
+### 3. Agentes Especializados
+Você pode descrever funções e instruções personalizadas para agentes de IA no formato JSON. Cada agente deve ter seu próprio diretório contendo um arquivo `agent.json`:
 
-```yaml
-# ~/.antigravity/agents/security-reviewer.yaml
-name: security-reviewer
-description: "Analisa o código em busca de vulnerabilidades antes do commit"
-instructions: |
-  Verificar alterações para:
-  - Vulnerabilidades OWASP Top 10
-  - Vazamento de chaves de API ou segredos
-  - Correção da configuração do firewall/nftables
+- **Agentes Globais (Linux/Unix)**: `~/.gemini/antigravity-cli/agents/{agent_name}/agent.json`
+- **Agentes Globais (macOS)**: `~/Library/Application Support/antigravity-cli/agents/{agent_name}/agent.json`
+- **Agentes Globais (Windows)**: `%APPDATA%\antigravity-cli\agents\{agent_name}\agent.json`
+- **Agentes Locais (Espaço de Trabalho)**: `{workspace_root}/.agents/agents/{agent_name}/agent.json`
+
+```json
+{
+  "name": "security-reviewer",
+  "description": "Analisa o código em busca de vulnerabilidades antes do commit",
+  "instructions": "Verificar alterações para:\n- Vulnerabilidades OWASP Top 10\n- Vazamento de chaves de API ou segredos\n- Correção da configuração do firewall/nftables"
+}
 ```
 
 ---
@@ -171,11 +173,7 @@ agy plugin list                  # Listar os plugins instalados
 
 ### Passos para Transição Rápida
 1. Instale o novo cliente: `curl -fsSL https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/install.sh | bash`
-2. Renomeie os arquivos de configuração locais:
-   ```bash
-   mv GEMINI.md .antigravity.md
-   mv ~/.gemini/agents/ ~/.antigravity/agents/
-   ```
+2. Migre os arquivos de configuração de agentes personalizados locais (por exemplo, converta agentes personalizados de YAML dentro de `~/.gemini/agents/` em arquivos JSON em `~/.gemini/antigravity-cli/agents/{agent_name}/agent.json`).
 3. Atualize as configurações de CI/CD no GitHub Actions, substituindo as chamadas de `gemini` por `agy`.
 4. Desinstale a biblioteca antiga: `npm uninstall -g @google/gemini-cli`
 
@@ -186,7 +184,7 @@ agy plugin list                  # Listar os plugins instalados
 | **Plataforma de Desenvolvimento** | Node.js / TypeScript | Go (Binário Nativo Compilado) |
 | **Nome do Comando** | `gemini` | `agy` |
 | **Velocidade de Inicialização** | ~1.2s (inicialização do Node.js) | **~0.05s (inicialização nativa instantânea)** |
-| **Arquivo de Configuração** | `GEMINI.md` | `.antigravity.md` |
+| **Arquivo de Configuração** | `GEMINI.md` | `GEMINI.md` |
 | **Atualização Automática** | Via `npm update` | Mecanismo de auto-atualização integrado |
 | **Status do Suporte** | ⛔ Fim da vida útil (18 de junho de 2026) | ✅ Desenvolvimento Ativo (Upstream) |
 
@@ -200,9 +198,9 @@ antigravity-cli/
 ├── install.ps1          # Instalador para Windows PowerShell (offline/online)
 ├── install.cmd          # Instalador para Windows CMD
 ├── Makefile             # Metas de automação (make install/reinstall/uninstall)
-├── .antigravity.md      # Modelo de arquivo de contexto de projeto
+├── GEMINI.md            # Modelo de arquivo de contexto de projeto
 ├── packages/            # Distribuição offline local
-│   ├── manifests/       # Manifestos de versão para todas as plataformas
+│   ├── manifests/       # Manifestes de versão para todas as plataformas
 │   └── binaries/        # (Criado manualmente para o modo offline)
 └── CHANGELOG.md         # Registro de alterações e lançamentos
 ```
