@@ -64,7 +64,7 @@ const convId = data.conversation_id || "";
 const inputTokens = (data.context_window && data.context_window.total_input_tokens) ? data.context_window.total_input_tokens : 0;
 const outputTokens = (data.context_window && data.context_window.total_output_tokens) ? data.context_window.total_output_tokens : 0;
 const ctxLimit = (data.context_window && data.context_window.context_window_size) ? data.context_window.context_window_size : 0;
-const ctxUsed = (data.context_window && data.context_window.current_usage) ? data.context_window.current_usage : 0;
+const ctxUsed = inputTokens + outputTokens;
 
 // ─── Helper Formatting Functions ─────────────────────────────────────────────
 function humanFormat(num) {

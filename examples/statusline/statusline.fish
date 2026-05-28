@@ -28,7 +28,7 @@ set -l CONV_ID (echo $DATA | jq -r '.conversation_id // ""')
 set -l INPUT_TOKENS (echo $DATA | jq -r '.context_window.total_input_tokens // 0')
 set -l OUTPUT_TOKENS (echo $DATA | jq -r '.context_window.total_output_tokens // 0')
 set -l CTX_LIMIT (echo $DATA | jq -r '.context_window.context_window_size // 0')
-set -l CTX_USED (echo $DATA | jq -r '.context_window.current_usage // 0')
+set -l CTX_USED (echo $DATA | jq -r '(.context_window.total_input_tokens // 0) + (.context_window.total_output_tokens // 0)')
 
 # ANSI Helpers
 set -l R (set_color normal)

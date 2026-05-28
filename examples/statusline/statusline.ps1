@@ -60,7 +60,7 @@ $convId = if ($data.conversation_id) { $data.conversation_id } else { "" }
 $inputTokens = if ($data.context_window -and $null -ne $data.context_window.total_input_tokens) { $data.context_window.total_input_tokens } else { 0 }
 $outputTokens = if ($data.context_window -and $null -ne $data.context_window.total_output_tokens) { $data.context_window.total_output_tokens } else { 0 }
 $ctxLimit = if ($data.context_window -and $null -ne $data.context_window.context_window_size) { $data.context_window.context_window_size } else { 0 }
-$ctxUsed = if ($data.context_window -and $null -ne $data.context_window.current_usage) { $data.context_window.current_usage } else { 0 }
+$ctxUsed = $inputTokens + $outputTokens
 
 # ─── Helper Functions ────────────────────────────────────────────────────────
 function Get-HumanFormat {
