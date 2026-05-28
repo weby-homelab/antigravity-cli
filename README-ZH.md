@@ -77,8 +77,8 @@ install.cmd
 
 ## ⚙️ 配置方式
 
-### 1. 项目配置 (`.antigravity.md`)
-在项目的根目录下创建一个 `.antigravity.md` 文件，为 AI 智能体提供特定的项目上下文和开发规则：
+### 1. 项目配置 (`GEMINI.md`)
+在项目的根目录下创建一个 `GEMINI.md` 文件，为 AI 智能体提供特定的项目上下文和开发规则：
 
 ```markdown
 # 项目上下文
@@ -100,11 +100,11 @@ install.cmd
   "toolPermission": "always-proceed",
   "statusLine": {
     "enabled": true,
-    "command": "/root/.gemini/antigravity-cli/statusline.sh"
+    "command": "/home/user/.gemini/antigravity-cli/statusline.sh"
   },
   "title": {
     "enabled": true,
-    "command": "/root/.gemini/antigravity-cli/title.sh"
+    "command": "/home/user/.gemini/antigravity-cli/title.sh"
   },
   "mcpServers": {
     "github": {
@@ -115,18 +115,20 @@ install.cmd
 }
 ```
 
-### 3. 专业智能体 (`~/.antigravity/agents/`)
-您可以使用 YAML 格式定义 AI 智能体的自定义角色 and 说明：
+### 3. 专业智能体
+您可以使用 JSON 格式定义 AI 智能体的自定义角色和说明。每个智能体必须有自己的目录，其中包含一个 `agent.json` 文件：
 
-```yaml
-# ~/.antigravity/agents/security-reviewer.yaml
-name: security-reviewer
-description: "在提交前分析代码漏洞"
-instructions: |
-  检查更改内容：
-  - OWASP Top 10 漏洞
-  - API 密钥或凭证泄露
-  - 防火墙/nftables 配置正确性
+- **全局智能体 (Linux/Unix)**: `~/.gemini/antigravity-cli/agents/{agent_name}/agent.json`
+- **全局智能体 (macOS)**: `~/Library/Application Support/antigravity-cli/agents/{agent_name}/agent.json`
+- **全局智能体 (Windows)**: `%APPDATA%\antigravity-cli\agents\{agent_name}\agent.json`
+- **本地智能体 (项目工作区)**: `{workspace_root}/.agents/agents/{agent_name}/agent.json`
+
+```json
+{
+  "name": "security-reviewer",
+  "description": "在提交前分析代码漏洞",
+  "instructions": "检查更改内容：\n- OWASP Top 10 漏洞\n- API 密钥或凭证泄露\n- 防火墙/nftables 配置正确性"
+}
 ```
 
 ---
@@ -171,11 +173,7 @@ agy plugin list                  # 列出已安装的插件
 
 ### 快速迁移步骤
 1. 安装新客户端：`curl -fsSL https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/install.sh | bash`
-2. 重命名本地配置文件：
-   ```bash
-   mv GEMINI.md .antigravity.md
-   mv ~/.gemini/agents/ ~/.antigravity/agents/
-   ```
+2. 迁移本地自定义智能体配置文件（例如，将 `~/.gemini/agents/` 下的 YAML 格式自定义智能体转换为 `~/.gemini/antigravity-cli/agents/{agent_name}/agent.json` 下的 JSON 文件）。
 3. 更新 GitHub Actions 中的 CI/CD 配置，将所有的 `gemini` 调用替换为 `agy`。
 4. 卸载旧的依赖库：`npm uninstall -g @google/gemini-cli`
 
@@ -186,7 +184,7 @@ agy plugin list                  # 列出已安装的插件
 | **开发语言/平台** | Node.js / TypeScript | Go (原生编译的二进制文件) |
 | **执行命令** | `gemini` | `agy` |
 | **启动速度** | ~1.2秒 (Node.js 启动延迟) | **~0.05秒 (原生瞬间启动)** |
-| **项目配置文件** | `GEMINI.md` | `.antigravity.md` |
+| **项目配置文件** | `GEMINI.md` | `GEMINI.md` |
 | **自动更新** | 通过 `npm update` | 内置的自我更新机制 |
 | **维护状态** | ⛔ 已停止支持 (2026年6月18日) | ✅ 持续活跃开发 (上游支持) |
 
@@ -200,7 +198,7 @@ antigravity-cli/
 ├── install.ps1          # Windows PowerShell 安装程序 (离线/在线)
 ├── install.cmd          # Windows CMD 安装程序
 ├── Makefile             # 自动化目标 (make install/reinstall/uninstall)
-├── .antigravity.md      # 项目上下文模板文件
+├── GEMINI.md            # 项目上下文模板文件
 ├── packages/            # 本地离线分发包
 │   ├── manifests/       # 适用于所有平台的版本清单
 │   └── binaries/        # (离线模式下需手动创建)

@@ -77,8 +77,8 @@ install.cmd
 
 ## ⚙️ Configuration
 
-### 1. Project Configuration (`.antigravity.md`)
-Create an `.antigravity.md` file in the root of your project to provide specific context and development rules to the AI agent:
+### 1. Project Configuration (`GEMINI.md`)
+Create a `GEMINI.md` file in the root of your project to provide specific context and development rules to the AI agent:
 
 ```markdown
 # Project Context
@@ -100,11 +100,11 @@ The global settings file controls tool execution permissions, statusline/title s
   "toolPermission": "always-proceed",
   "statusLine": {
     "enabled": true,
-    "command": "/root/.gemini/antigravity-cli/statusline.sh"
+    "command": "/home/user/.gemini/antigravity-cli/statusline.sh"
   },
   "title": {
     "enabled": true,
-    "command": "/root/.gemini/antigravity-cli/title.sh"
+    "command": "/home/user/.gemini/antigravity-cli/title.sh"
   },
   "mcpServers": {
     "github": {
@@ -115,18 +115,20 @@ The global settings file controls tool execution permissions, statusline/title s
 }
 ```
 
-### 3. Specialized Agents (`~/.antigravity/agents/`)
-You can describe custom roles and instructions for AI agents in YAML format:
+### 3. Specialized Agents
+You can describe custom roles and instructions for AI agents in JSON format. Each agent must have its own directory containing an `agent.json` file:
 
-```yaml
-# ~/.antigravity/agents/security-reviewer.yaml
-name: security-reviewer
-description: "Analyzes code for vulnerabilities before commit"
-instructions: |
-  Check changes for:
-  - OWASP Top 10 vulnerabilities
-  - Leakage of API keys or secrets
-  - Correctness of firewall/nftables configuration
+- **Global Agents (Linux/Unix)**: `~/.gemini/antigravity-cli/agents/{agent_name}/agent.json`
+- **Global Agents (macOS)**: `~/Library/Application Support/antigravity-cli/agents/{agent_name}/agent.json`
+- **Global Agents (Windows)**: `%APPDATA%\antigravity-cli\agents\{agent_name}\agent.json`
+- **Local Agents (Project Workspace)**: `{workspace_root}/.agents/agents/{agent_name}/agent.json`
+
+```json
+{
+  "name": "security-reviewer",
+  "description": "Analyzes code for vulnerabilities before commit",
+  "instructions": "Check changes for:\n- OWASP Top 10 vulnerabilities\n- Leakage of API keys or secrets\n- Correctness of firewall/nftables configuration"
+}
 ```
 
 ---
@@ -171,11 +173,7 @@ agy plugin list                  # List installed plugins
 
 ### Steps for Quick Transition
 1. Install the new client: `curl -fsSL https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/install.sh | bash`
-2. Rename local configuration files:
-   ```bash
-   mv GEMINI.md .antigravity.md
-   mv ~/.gemini/agents/ ~/.antigravity/agents/
-   ```
+2. Migrate local custom agent configuration files (e.g. convert custom agents from YAML inside `~/.gemini/agents/` to JSON files at `~/.gemini/antigravity-cli/agents/{agent_name}/agent.json`).
 3. Update CI/CD configurations in GitHub Actions, replacing `gemini` calls with `agy`.
 4. Uninstall the old library: `npm uninstall -g @google/gemini-cli`
 
@@ -186,7 +184,7 @@ agy plugin list                  # List installed plugins
 | **Development Platform** | Node.js / TypeScript | Go (Native Compiled Binary) |
 | **Command Name** | `gemini` | `agy` |
 | **Startup Speed** | ~1.2s (Node.js startup) | **~0.05s (instant native startup)** |
-| **Configuration File** | `GEMINI.md` | `.antigravity.md` |
+| **Configuration File** | `GEMINI.md` | `GEMINI.md` |
 | **Auto-update** | Via `npm update` | Built-in self-update mechanism |
 | **Support Status** | ⛔ EOL (June 18, 2026) | ✅ Active Development (Upstream) |
 
@@ -200,7 +198,7 @@ antigravity-cli/
 ├── install.ps1          # Installer for Windows PowerShell (offline/online)
 ├── install.cmd          # Installer for Windows CMD
 ├── Makefile             # Automation targets (make install/reinstall/uninstall)
-├── .antigravity.md      # Project context file template
+├── GEMINI.md            # Project context file template
 ├── packages/            # Local offline distribution
 │   ├── manifests/       # Version manifests for all platforms
 │   └── binaries/        # (Created manually for offline mode)
