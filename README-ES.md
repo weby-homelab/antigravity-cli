@@ -88,16 +88,23 @@ Cree un archivo `.antigravity.md` en la raíz de su proyecto para proporcionar u
 - REGLA ESTRICTA: No use contraseñas hardcoded en el código. Importe todos los secretos desde `.env`.
 ```
 
-### 2. Configuración global (`~/.gemini/settings.json`)
-El archivo de configuración controla el comportamiento de la interfaz de usuario y los servidores MCP:
+### 2. Configuración global (`~/.gemini/antigravity-cli/settings.json`)
+El archivo de configuración global controla los permisos de ejecución de herramientas, los scripts de statusline/título y los servidores MCP:
+
+- **Linux/Unix**: `~/.gemini/antigravity-cli/settings.json`
+- **macOS**: `~/Library/Application Support/antigravity-cli/settings.json`
+- **Windows**: `%APPDATA%\antigravity-cli\settings.json`
 
 ```json
 {
-  "theme": "terminal",
-  "sandbox": false,
-  "defaultApprovalMode": "auto_edit",
-  "ui": {
-    "showFooter": true
+  "toolPermission": "always-proceed",
+  "statusLine": {
+    "enabled": true,
+    "command": "/root/.gemini/antigravity-cli/statusline.sh"
+  },
+  "title": {
+    "enabled": true,
+    "command": "/root/.gemini/antigravity-cli/title.sh"
   },
   "mcpServers": {
     "github": {

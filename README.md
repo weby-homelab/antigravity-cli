@@ -88,16 +88,23 @@ Create an `.antigravity.md` file in the root of your project to provide specific
 - STRICT RULE: No hardcoded passwords in code. Import all secrets from `.env`.
 ```
 
-### 2. Global Settings (`~/.gemini/settings.json`)
-The configuration file controls the UI behavior and MCP servers:
+### 2. Global Settings (`~/.gemini/antigravity-cli/settings.json`)
+The global settings file controls tool execution permissions, statusline/title scripts, and MCP servers:
+
+- **Linux/Unix**: `~/.gemini/antigravity-cli/settings.json`
+- **macOS**: `~/Library/Application Support/antigravity-cli/settings.json`
+- **Windows**: `%APPDATA%\antigravity-cli\settings.json`
 
 ```json
 {
-  "theme": "terminal",
-  "sandbox": false,
-  "defaultApprovalMode": "auto_edit",
-  "ui": {
-    "showFooter": true
+  "toolPermission": "always-proceed",
+  "statusLine": {
+    "enabled": true,
+    "command": "/root/.gemini/antigravity-cli/statusline.sh"
+  },
+  "title": {
+    "enabled": true,
+    "command": "/root/.gemini/antigravity-cli/title.sh"
   },
   "mcpServers": {
     "github": {

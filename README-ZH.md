@@ -88,16 +88,23 @@ install.cmd
 - 严格规则：严禁在代码中硬编码任何密码。所有机密信息必须从 `.env` 文件导入。
 ```
 
-### 2. 全局设置 (`~/.gemini/settings.json`)
-此配置文件控制 UI 行为和 MCP 服务器：
+### 2. 全局设置 (`~/.gemini/antigravity-cli/settings.json`)
+全局配置文件控制工具执行权限、状态栏/窗口标题脚本以及 MCP 服务器：
+
+- **Linux/Unix**: `~/.gemini/antigravity-cli/settings.json`
+- **macOS**: `~/Library/Application Support/antigravity-cli/settings.json`
+- **Windows**: `%APPDATA%\antigravity-cli\settings.json`
 
 ```json
 {
-  "theme": "terminal",
-  "sandbox": false,
-  "defaultApprovalMode": "auto_edit",
-  "ui": {
-    "showFooter": true
+  "toolPermission": "always-proceed",
+  "statusLine": {
+    "enabled": true,
+    "command": "/root/.gemini/antigravity-cli/statusline.sh"
+  },
+  "title": {
+    "enabled": true,
+    "command": "/root/.gemini/antigravity-cli/title.sh"
   },
   "mcpServers": {
     "github": {
