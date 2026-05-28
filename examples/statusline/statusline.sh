@@ -1,5 +1,7 @@
 #!/bin/bash
 set -euo pipefail
+INPUT_JSON=$(cat)
+
 
 # ─── ANSI Helpers (Standard 16-color palette only) ───────────────────────────
 R="\033[0m"         # Reset
@@ -54,7 +56,7 @@ NUM_COLOR="${FG_BRIGHT_WHITE}${B}"
   read -r CTX_USED
   read -r REM_PCT
 } <<< "$(
-  jq -r '
+  echo "$INPUT_JSON" | jq -r '
     (.agent_state // "idle"),
     (.context_window.used_percentage // 0),
     (.vcs.branch // ""),
@@ -75,7 +77,7 @@ NUM_COLOR="${FG_BRIGHT_WHITE}${B}"
     (.context_window.total_input_tokens // 0),
     (.context_window.total_output_tokens // 0),
     (.context_window.context_window_size // 0),
-    (.context_window.current_usage // 0),
+    ((.context_window.total_input_tokens // 0) + (.context_window.total_output_tokens // 0)),
     (.context_window.remaining_percentage // 100)
   ' 2>/dev/null || printf "idle\n0\n\nfalse\n\n\nfalse\nfalse\n0\n0\n0\n\n\n80\n\n\n\n0\n0\n0\n0\n100\n"
 )"
