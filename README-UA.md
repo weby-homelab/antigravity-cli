@@ -88,16 +88,23 @@ install.cmd
 - СУВОРЕ ПРАВИЛО: Жодних хардкод-паролів у коді. Всі секрети імпортувати з `.env`.
 ```
 
-### 2. Глобальні налаштування (`~/.gemini/settings.json`)
-Конфігураційний файл керує поведінкою інтерфейсу та MCP-серверами:
+### 2. Глобальні налаштування (`~/.gemini/antigravity-cli/settings.json`)
+Глобальний файл налаштувань керує дозволами на виконання інструментів, скриптами статуслайну/заголовка та MCP-серверами:
+
+- **Linux/Unix**: `~/.gemini/antigravity-cli/settings.json`
+- **macOS**: `~/Library/Application Support/antigravity-cli/settings.json`
+- **Windows**: `%APPDATA%\antigravity-cli\settings.json`
 
 ```json
 {
-  "theme": "terminal",
-  "sandbox": false,
-  "defaultApprovalMode": "auto_edit",
-  "ui": {
-    "showFooter": true
+  "toolPermission": "always-proceed",
+  "statusLine": {
+    "enabled": true,
+    "command": "/root/.gemini/antigravity-cli/statusline.sh"
+  },
+  "title": {
+    "enabled": true,
+    "command": "/root/.gemini/antigravity-cli/title.sh"
   },
   "mcpServers": {
     "github": {
