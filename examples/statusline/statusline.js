@@ -1,0 +1,220 @@
+#!/usr/bin/env node
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+
+// ─── Read JSON from stdin ────────────────────────────────────────────────────
+let rawData = '';
+try {
+  rawData = fs.readFileSync(0, 'utf-8');
+} catch (e) {
+  // Silence read errors
+}
+
+let data = {};
+try {
+  data = JSON.parse(rawData || '{}');
+} catch (e) {
+  // Silence JSON parse errors
+}
+
+// ─── ANSI Helpers (Standard 16-color palette only) ───────────────────────────
+const R = "\x1b[0m";         // Reset
+const B = "\x1b[1m";         // Bold
+const D = "\x1b[2m";         // Dim
+const I = "\x1b[3m";         // Italic
+
+// Foreground accents (Standard 16 colors)
+const FG_BLACK = "\x1b[30m";
+const FG_RED = "\x1b[31m";
+const FG_GREEN = "\x1b[32m";
+const FG_YELLOW = "\x1b[33m";
+const FG_BLUE = "\x1b[34m";
+const FG_MAGENTA = "\x1b[35m";
+const FG_CYAN = "\x1b[36m";
+const FG_WHITE = "\x1b[37m";
+
+const FG_GRAY = "\x1b[90m";
+const FG_BRIGHT_RED = "\x1b[91m";
+const FG_BRIGHT_GREEN = "\x1b[92m";
+const FG_BRIGHT_YELLOW = "\x1b[93m";
+const FG_BRIGHT_BLUE = "\x1b[94m";
+const FG_BRIGHT_MAGENTA = "\x1b[95m";
+const FG_BRIGHT_CYAN = "\x1b[96m";
+const FG_BRIGHT_WHITE = "\x1b[97m";
+
+const NUM_COLOR = FG_BRIGHT_WHITE + B;
+
+// ─── Extract fields with fallbacks ───────────────────────────────────────────
+const state = data.agent_state || "idle";
+const usedPct = (data.context_window && typeof data.context_window.used_percentage === 'number') ? data.context_window.used_percentage : 0;
+const vcsBranch = (data.vcs && data.vcs.branch) ? data.vcs.branch : "";
+const vcsDirty = (data.vcs && data.vcs.dirty) ? data.vcs.dirty : false;
+const vcsType = (data.vcs && data.vcs.type) ? data.vcs.type : "";
+const sandboxEnabled = (data.sandbox && data.sandbox.enabled) ? data.sandbox.enabled : false;
+const sandboxNet = (data.sandbox && data.sandbox.allow_network) ? data.sandbox.allow_network : false;
+const artifactCount = data.artifact_count || 0;
+const subagentsCount = Array.isArray(data.subagents) ? data.subagents.length : 0;
+const taskCount = data.task_count || 0;
+const modelId = (data.model && data.model.id) ? data.model.id : "";
+const modelName = (data.model && data.model.display_name) ? data.model.display_name : "";
+const cols = data.terminal_width || 80;
+const cwd = data.cwd || "";
+const convId = data.conversation_id || "";
+const inputTokens = (data.context_window && data.context_window.total_input_tokens) ? data.context_window.total_input_tokens : 0;
+const outputTokens = (data.context_window && data.context_window.total_output_tokens) ? data.context_window.total_output_tokens : 0;
+const ctxLimit = (data.context_window && data.context_window.context_window_size) ? data.context_window.context_window_size : 0;
+const ctxUsed = inputTokens + outputTokens;
+
+// ─── Helper Formatting Functions ─────────────────────────────────────────────
+function humanFormat(num) {
+  if (!num || isNaN(num) || num === 0) return "0";
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + "M";
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1).replace(/\.0$/, '') + "K";
+  }
+  return num.toString();
+}
+
+function shortenPath(p) {
+  if (!p) return "";
+  const home = os.homedir();
+  if (p.startsWith(home)) {
+    p = "~" + p.slice(home.length);
+  }
+  if (p.length > 25) {
+    return "..." + path.basename(p);
+  }
+  return p;
+}
+
+const cwdShort = shortenPath(cwd);
+
+// ─── State Indicator (No background colors) ──────────────────────────────────
+let S = "";
+switch (state) {
+  case 'idle':
+    S = `${FG_BRIGHT_GREEN}${B}● READY${R}`;
+    break;
+  case 'thinking':
+    S = `${FG_BRIGHT_YELLOW}${B}◆ THINKING${R}`;
+    break;
+  case 'working':
+    S = `${FG_BRIGHT_CYAN}${B}⚙ WORKING${R}`;
+    break;
+  case 'tool_use':
+    S = `${FG_BRIGHT_MAGENTA}${B}🔧 TOOL${R}`;
+    break;
+  default:
+    S = `${FG_WHITE}${B}⏳ ${state.toUpperCase()}${R}`;
+}
+
+// ─── VCS Branch & Type ───────────────────────────────────────────────────────
+let V = "";
+if (vcsBranch) {
+  const vcsLabel = vcsType || "git";
+  if (vcsDirty || vcsDirty === "true") {
+    V = `${FG_GRAY} ╱ ${FG_GRAY}${vcsLabel}:${FG_BRIGHT_RED}${vcsBranch}${FG_BRIGHT_YELLOW}*${R}`;
+  } else {
+    V = `${FG_GRAY} ╱ ${FG_GRAY}${vcsLabel}:${FG_BRIGHT_BLUE}${vcsBranch}${R}`;
+  }
+}
+
+// ─── Model ───────────────────────────────────────────────────────────────────
+const modelDisp = modelName || modelId;
+let M = "";
+if (modelDisp) {
+  M = `${FG_GRAY} ╱ ${FG_BRIGHT_MAGENTA}${I}${modelDisp}${R}`;
+}
+
+// ─── Sandbox Badge ───────────────────────────────────────────────────────────
+let SB = "";
+if (sandboxEnabled || sandboxEnabled === "true") {
+  if (sandboxNet || sandboxNet === "true") {
+    SB = `${FG_GRAY}🛡️ sandbox ${FG_BRIGHT_GREEN}${B}ON (net)${R}`;
+  } else {
+    SB = `${FG_GRAY}🛡️ sandbox ${FG_BRIGHT_GREEN}${B}ON (no-net)${R}`;
+  }
+} else {
+  SB = `${FG_GRAY}🛡️ sandbox off${R}`;
+}
+
+// ─── Context Bar (15 segments, fine-grain Unicode) ────────────────────────────
+const barLen = 15;
+const pctInt = Math.floor(usedPct);
+const filled = Math.floor((pctInt * barLen) / 100);
+const remainder = (pctInt * barLen) % 100;
+
+let barColor = FG_BRIGHT_WHITE;
+if (pctInt >= 90) {
+  barColor = FG_BRIGHT_RED;
+} else if (pctInt >= 60) {
+  barColor = FG_BRIGHT_YELLOW;
+}
+
+let bar = "";
+for (let i = 0; i < barLen; i++) {
+  if (i < filled) {
+    bar += "█";
+  } else if (i === filled) {
+    if (remainder >= 75) {
+      bar += "▓";
+    } else if (remainder >= 50) {
+      bar += "▒";
+    } else if (remainder >= 25) {
+      bar += "░";
+    } else {
+      bar += "·";
+    }
+  } else {
+    bar += "·";
+  }
+}
+
+// ─── Stats & Metadata formatting ─────────────────────────────────────────────
+const pctFmt = usedPct.toFixed(1);
+const ctxBar = `${FG_GRAY}ctx ${barColor}${bar} ${NUM_COLOR}${pctFmt}%${R}`;
+const artFmt = `${FG_GRAY}📦 ${NUM_COLOR}${artifactCount}${R}`;
+const subFmt = `${FG_GRAY}🤖 ${NUM_COLOR}${subagentsCount}${R}`;
+const bgFmt = `${FG_GRAY}⏳ ${NUM_COLOR}${taskCount}${R}`;
+
+let dirFmt = "";
+if (cwdShort) {
+  dirFmt = `${FG_GRAY} ╱ 📂 ${cwdShort}${R}`;
+}
+
+let convFmt = "";
+if (convId) {
+  convFmt = `${FG_GRAY} ╱ id:${convId.slice(0, 8)}${R}`;
+}
+
+let tokDetails = "";
+if (ctxUsed > 0) {
+  tokDetails = ` (${humanFormat(ctxUsed)}/${humanFormat(ctxLimit)})`;
+}
+
+const dot = `${FG_GRAY} · ${R}`;
+
+// ─── Output Assembly ──────────────────────────────────────────────────────────
+if (cols >= 120) {
+  let line1 = `${S}${M}${V}${dirFmt}${convFmt}`;
+  if (ctxUsed > 0) {
+    tokDetails = ` (${humanFormat(ctxUsed)}/${humanFormat(ctxLimit)} · ${humanFormat(inputTokens)} in/${humanFormat(outputTokens)} out)`;
+  }
+  let line2 = ` ${ctxBar}${tokDetails}${dot}${artFmt}${dot}${subFmt}${dot}${bgFmt}${dot}${SB}`;
+  console.log(`${line1}${FG_GRAY}  │  ${R}${line2}`);
+} else if (cols >= 80) {
+  let line1 = `${S}${M}${V}${dirFmt}`;
+  let line2 = ` ${ctxBar}${tokDetails}${dot}${artFmt}${dot}${subFmt}${dot}${bgFmt}${dot}${SB}`;
+  console.log(`${FG_GRAY}╭─${R} ${line1}`);
+  console.log(`${FG_GRAY}╰─${R}${line2}`);
+} else {
+  let mShort = "";
+  if (modelDisp) {
+    mShort = `${FG_GRAY} ╱ ${FG_BRIGHT_MAGENTA}${modelDisp.slice(0, 12)}${R}`;
+  }
+  console.log(`${S}${mShort}`);
+  console.log(`${ctxBar}${dot}${bgFmt}`);
+}
