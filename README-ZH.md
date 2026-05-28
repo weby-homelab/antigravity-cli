@@ -2,80 +2,235 @@
   <a href="README.md">English</a> | <b>中文</b> | <a href="README-ES.md">Español</a> | <a href="README-FR.md">Français</a> | <a href="README-PT.md">Português</a> | <a href="README-UA.md">Українська</a> | <a href="README-DE.md">Deutsch</a>
 </p>
 
-# Antigravity CLI
+<p align="center">
+  <img src="https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/agy-cli-demo.gif" alt="Antigravity CLI Logo" width="600" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);" />
+</p>
 
-Antigravity CLI 能够理解您的代码库、在获得您许可的情况下编辑文件并执行命令——直接在您的终端中进行。
+<h1 align="center">🚀 Antigravity CLI</h1>
 
-- **官方文档**: [antigravity.google/docs/cli-overview](https://antigravity.google/docs/cli-overview)
-- **官方网站**: [antigravity.google/product/antigravity-cli](https://antigravity.google/product/antigravity-cli)
+<p align="center">
+  <strong>社区分叉与硬化离线版 google-antigravity/antigravity-cli，支持状态栏和窗口标题的自动设置</strong>
+</p>
 
-![Antigravity CLI Demo](agy-cli-demo.gif)
+<p align="center">
+  <a href="https://github.com/weby-homelab/antigravity-cli"><img src="https://img.shields.io/badge/fork-google--antigravity-8a2be2?style=for-the-badge&logo=github" alt="GitHub Fork" /></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-1.0.3-success?style=for-the-badge&logo=git" alt="Version" /></a>
+  <a href="https://antigravity.google/terms"><img src="https://img.shields.io/badge/license-Apache--2.0-blue?style=for-the-badge" alt="License" /></a>
+  <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=for-the-badge" alt="Supported Platforms" />
+</p>
 
----
-
-Antigravity CLI 将 Antigravity 2.0 的核心能力（多步推理、多文件编辑、工具调用和持久化历史记录）直接带入您的终端。它针对键盘驱动的常规工作流以及具有极低资源开销的远程 SSH 会话进行了优化。
-
----
-
-## 功能概览
-
-| 功能 | Antigravity CLI | Antigravity 2.0 |
-| :--- | :--- | :--- |
-| **主要侧重点** | 速度、键盘效率、低开销 | 全面性、可视化编排、项目管理 |
-| **界面** | 终端用户界面 (TUI) | 完整丰富的 GUI 应用程序 |
-| **工作流** | SSH/远程会话，键盘优先 | 本地工作区，重度编排 |
-| **智能体引擎** | 共享核心智能体引擎 | 共享核心智能体引擎 |
+<p align="center">
+  🤖 <b>直接在您的终端中运行 of AI 编码智能体</b>。理解您的代码库上下文，创建和编辑文件，在沙箱中执行安全命令，并在单个提示词中解决复杂的架构任务。
+</p>
 
 ---
 
-## 整合与协同
+## ⚡ 快速开始
 
-- **共享智能体引擎**: 两种界面均运行在相同的核心智能体引擎上。改进将自动应用到两者。
-- **共享设置**: 偏好设置和权限进行双向同步。
-- **会话导出**: 将终端会话导出至 Antigravity 2.0 GUI 以继续工作。
+### 即时安装（离线优先与零依赖）
+此分叉版本直接从 **GitHub Release Assets**（而不是 Google API 服务器）下载预编译的二进制文件。如果预先将所需的归档文件加载到 `packages/binaries/` 文件夹中，则同样支持完全自治的离线安装。
 
----
-
-## 安装
-
-### macOS / Linux
+#### 🐧 Linux 和 🍎 macOS
 ```bash
-curl -fsSL https://antigravity.google/cli/install.sh | bash
+# 从分叉存储库进行网络安装：
+curl -fsSL https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/install.sh | bash
+
+# 或者从本地存储库进行离线安装：
+git clone https://github.com/weby-homelab/antigravity-cli.git
+cd antigravity-cli
+# （可选：将对应平台的归档文件下载到 packages/binaries/ 中）
+make install
 ```
 
-### Windows PowerShell
+#### 🪟 Windows PowerShell
 ```powershell
-irm https://antigravity.google/cli/install.ps1 | iex
+# 网络安装：
+irm https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/install.ps1 | iex
+
+# 或者从克隆的存储库进行离线安装：
+.\install.ps1
 ```
 
-### Windows CMD
+#### 🪟 Windows CMD
 ```cmd
-curl -fsSL https://antigravity.google/cli/install.cmd -o install.cmd && install.cmd && del install.cmd
+# 网络安装：
+curl -fsSL https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/install.cmd -o install.cmd && install.cmd && del install.cmd
+
+# 或者从克隆的存储库进行离线安装：
+install.cmd
 ```
 
 ---
 
-## 身份验证
-
-CLI 通过系统钥匙串进行身份验证，如果不存在活动会话，则回退到 Google 登录。
-
-- **本地**: 自动打开您的默认浏览器。
-- **远程 / SSH**: 检测 SSH 会话并打印授权 URL，以便在本地完成登录。
-- **退出登录**: 运行 `/logout` 以清除保存的凭据。
+## 📋 核心功能
 
 > [!NOTE]
-> 如需企业访问，请在新手引导期间连接您的 GCP 项目。详情请参阅企业版页面。
+> 与原始版本不同，此分叉版本经过特别优化，适用于无头（headless）环境、SSH 会话以及本地家庭实验室（Home Labs）中的稳定运行。
+
+*   📂 **多文件编辑** — 在您的工作区中同时编辑多个文件，并在应用更改前进行确认。
+*   🔒 **安全 Shell 命令** — 在内置的 Docker 容器（沙箱）或主机系统上执行任意终端命令。
+*   🧠 **多步推理 (PAV)** — 独立构建任务执行计划，测试代码并调试自身的错误。
+*   💾 **持久化会话历史记录** — 在会话之间保存完整的对话上下文和工作区状态。
+*   🔌 **插件系统** — 使用自定义 *技能 (Skills)* 和 MCP（Model Context Protocol，模型上下文协议）服务器扩展智能体的能力。
 
 ---
 
-## 服务条款与数据使用
+## ⚙️ 配置方式
+
+### 1. 项目配置 (`.antigravity.md`)
+在项目的根目录下创建一个 `.antigravity.md` 文件，为 AI 智能体提供特定的项目上下文和开发规则：
+
+```markdown
+# 项目上下文
+
+- 本项目使用 FastAPI 和 Pydantic v2。
+- 请始终使用 `model_dump()` 代替已废弃的 `dict()`。
+- 严格规则：严禁在代码中硬编码任何密码。所有机密信息必须从 `.env` 文件导入。
+```
+
+### 2. 全局设置 (`~/.gemini/settings.json`)
+此配置文件控制 UI 行为和 MCP 服务器：
+
+```json
+{
+  "theme": "terminal",
+  "sandbox": false,
+  "defaultApprovalMode": "auto_edit",
+  "ui": {
+    "showFooter": true
+  },
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"]
+    }
+  }
+}
+```
+
+### 3. 专业智能体 (`~/.antigravity/agents/`)
+您可以使用 YAML 格式定义 AI 智能体的自定义角色 and 说明：
+
+```yaml
+# ~/.antigravity/agents/security-reviewer.yaml
+name: security-reviewer
+description: "在提交前分析代码漏洞"
+instructions: |
+  检查更改内容：
+  - OWASP Top 10 漏洞
+  - API 密钥或凭证泄露
+  - 防火墙/nftables 配置正确性
+```
+
+---
+
+## 🔐 身份验证方式
+
+| 方法 | 命令 / 环境变量 | 限制与特点 |
+| :--- | :--- | :--- |
+| **Google 身份验证（浏览器）** | 首次运行 `agy` 时自动触发 | 标准登录。免费限制：60 次请求/分钟，1000 次请求/天 |
+| **API 密钥（离线）** | `export GEMINI_API_KEY="X"` | 推荐用于服务器环境和自动化工作流 |
+| **Vertex AI** | `export GOOGLE_GENAI_USE_VERTEXAI=true` | 企业级方案，使用 Google Cloud 云基础设施 |
+| **注销登录** | `/logout` | 清除本地会话令牌 |
+
+---
+
+## 🔧 常用命令参考
+
+### 命令行工具
+```bash
+agy                              # 启动交互式会话
+agy -p "提示词"                  # 单次执行，不进入聊天界面
+agy -c                           # 继续上一次未完成的对话
+agy --conversation <ID>          # 通过特定 ID 加载会话
+agy --sandbox                    # 在隔离的 Docker 容器中运行
+agy update                       # 更新二进制文件到最新版本
+agy plugin list                  # 列出已安装的插件
+```
+
+### 聊天界面中的斜杠命令 (Slash Commands)
+*   `/help` — 获取可用工具的帮助信息。
+*   `/settings` — 交互式配置设置项。
+*   `/usage` — 消耗的令牌（Token）数量和配额统计。
+*   `/diff` — 查看项目中当前未保存的更改。
+*   `/statusline` — 配置终端状态栏的显示。
+
+---
+
+## 🔄 从 Gemini CLI 迁移
 
 > [!WARNING]
-> 众所周知，AI 编码智能体存在一定的安全风险，包括自主代码执行、数据外泄、提示词注入以及供应链风险。请务必监控并验证智能体执行的所有操作。
+> 原始的 Gemini CLI (`gemini`) 将于 **2026 年 6 月 18 日**起停止对非企业账户的支持。请及时迁移到 Antigravity CLI。
 
-通过使用 Antigravity CLI，您同意允许 Google 收集并使用您的交互数据以帮助改善产品，这受 Google 服务条款和 Google 隐私权政策的约束。您可以随时通过设置选择退出。
+### 快速迁移步骤
+1. 安装新客户端：`curl -fsSL https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/install.sh | bash`
+2. 重命名本地配置文件：
+   ```bash
+   mv GEMINI.md .antigravity.md
+   mv ~/.gemini/agents/ ~/.antigravity/agents/
+   ```
+3. 更新 GitHub Actions 中的 CI/CD 配置，将所有的 `gemini` 调用替换为 `agy`。
+4. 卸载旧的依赖库：`npm uninstall -g @google/gemini-cli`
 
-### 法律与隐私链接
+### 对比表
 
-- **服务条款**: [antigravity.google/terms](https://antigravity.google/terms)
-- **隐私权政策**: [policies.google.com/privacy](https://policies.google.com/privacy)
+| 功能 / 属性 | Gemini CLI (旧版) | Antigravity CLI (新版) |
+| :--- | :--- | :--- |
+| **开发语言/平台** | Node.js / TypeScript | Go (原生编译的二进制文件) |
+| **执行命令** | `gemini` | `agy` |
+| **启动速度** | ~1.2秒 (Node.js 启动延迟) | **~0.05秒 (原生瞬间启动)** |
+| **项目配置文件** | `GEMINI.md` | `.antigravity.md` |
+| **自动更新** | 通过 `npm update` | 内置的自我更新机制 |
+| **维护状态** | ⛔ 已停止支持 (2026年6月18日) | ✅ 持续活跃开发 (上游支持) |
+
+---
+
+## 📁 存储库结构
+
+```
+antigravity-cli/
+├── install.sh           # Linux/macOS 安装程序 (离线/在线)
+├── install.ps1          # Windows PowerShell 安装程序 (离线/在线)
+├── install.cmd          # Windows CMD 安装程序
+├── Makefile             # 自动化目标 (make install/reinstall/uninstall)
+├── .antigravity.md      # 项目上下文模板文件
+├── packages/            # 本地离线分发包
+│   ├── manifests/       # 适用于所有平台的版本清单
+│   └── binaries/        # (离线模式下需手动创建)
+└── CHANGELOG.md         # 变更日志和发布记录
+```
+
+---
+
+## 🤝 参与贡献与社区
+
+本仓库是原始上游项目 [google-antigravity/antigravity-cli](https://github.com/google-antigravity/antigravity-cli) 的独立社区分叉版本。
+
+**我们的改进：**
+*   🌍 支持文档和指南的多语言本地化。
+*   📦 自主性：具备完全离线安装能力，无需从 Google API 服务器下载。
+*   🛠️ 便利性：添加了 `Makefile`，简化工具生命周期管理。
+*   🛡️ 安全性：针对沙箱环境进行持续的安全改进和漏洞修复。
+
+---
+
+## 📜 法律声明与商标说明
+
+*   **官方链接**: [官方文档仓库](https://github.com/google-antigravity/antigravity-cli) · [官方 CLI 代码库](https://github.com/google-gemini/gemini-cli) · [官方网站](https://antigravity.google)
+*   **使用条款**: [antigravity.google/terms](https://antigravity.google/terms) · [policies.google.com/privacy](https://policies.google.com/privacy)
+
+> [!IMPORTANT]
+> **分叉版法律地位:**
+> 本存储库是原始客户端的独立非商业副本（社区分叉版本）。它**不是** Google LLC 的官方产品。Google LLC 对此分叉版本的性能、修改或安全性不承担任何责任。
+> 
+> **许可与版权信息:**
+> 原始软件基于 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) 协议分发。所有原始代码的知识产权均归 **Copyright © 2025 Google LLC** 所有。
+> 
+> **商标使用说明:**
+> "Antigravity CLI" 名称及相关徽标仅在合理使用（Customary Use）限制范围内使用，以描述软件的来源、兼容性和功能用途。本分叉项目不声称拥有 Google LLC 任何商标的所有权。
+> 
+> **免责声明:**
+> 本软件按“原样”提供，不提供任何明示或暗示的保证。您需自行承担使用该软件的所有责任和风险。
+
+> [!CAUTION]
+> AI 编码智能体运行具有自主性。在确认执行前，请务必仔细检查其建议的 diff 代码块和执行命令，尤其是在处理系统文件或防火墙配置时。

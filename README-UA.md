@@ -9,7 +9,7 @@
 <h1 align="center">🚀 Antigravity CLI</h1>
 
 <p align="center">
-  <strong>Community-Fork & Hardened Offline Version of google-antigravity/antigravity-cli</strong>
+  <strong>Ком'юніті-форк та покращена офлайн-версія google-antigravity/antigravity-cli з автоналаштуванням статуслайну та заголовка вікна</strong>
 </p>
 
 <p align="center">
