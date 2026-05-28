@@ -20,76 +20,76 @@
 </p>
 
 <p align="center">
-  🤖 <b>ШІ-кодинг агент прямо у вашому терміналі</b>. Розуміє контекст вашої кодової бази, створює та редагує файли, виконує безпечні команди в пісочниці та вирішує комплексні архітектурні завдання за один промпт.
+  🤖 <b>AI coding agent directly in your terminal</b>. Understands the context of your codebase, creates and edits files, executes secure commands in a sandbox, and solves complex architectural tasks in a single prompt.
 </p>
 
 ---
 
-## ⚡ Швидкий старт
+## ⚡ Quick Start
 
-### Миттєве встановлення (Offline-first & Zero-dependency)
-Цей форк завантажує попередньо скомпільовані бінарні файли прямо з **GitHub Release Assets** (замість серверів Google API). Також підтримується повністю автономне офлайн-встановлення, якщо потрібні архіви було попередньо завантажено в папку `packages/binaries/`.
+### Instant Installation (Offline-first & Zero-dependency)
+This fork downloads precompiled binaries directly from **GitHub Release Assets** (instead of Google API servers). Completely offline installation is also supported if the required archives were preloaded into the `packages/binaries/` folder.
 
-#### 🐧 Linux та 🍎 macOS
+#### 🐧 Linux and 🍎 macOS
 ```bash
-# Мережеве встановлення з репозиторію форку:
+# Network installation from the fork repository:
 curl -fsSL https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/install.sh | bash
 
-# АБО автономне офлайн-встановлення з локального репозиторію:
+# OR offline installation from a local repository:
 git clone https://github.com/weby-homelab/antigravity-cli.git
 cd antigravity-cli
-# (Опціонально: завантажте архіви платформ у packages/binaries/)
+# (Optional: download platform archives to packages/binaries/)
 make install
 ```
 
 #### 🪟 Windows PowerShell
 ```powershell
-# Мережеве встановлення:
+# Network installation:
 irm https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/install.ps1 | iex
 
-# АБО офлайн-встановлення з клонованого репозиторію:
+# OR offline installation from a cloned repository:
 .\install.ps1
 ```
 
 #### 🪟 Windows CMD
 ```cmd
-# Мережеве встановлення:
+# Network installation:
 curl -fsSL https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/install.cmd -o install.cmd && install.cmd && del install.cmd
 
-# АБО офлайн-встановлення з клонованого репозиторію:
+# OR offline installation from a cloned repository:
 install.cmd
 ```
 
 ---
 
-## 📋 Основні можливості
+## 📋 Key Features
 
 > [!NOTE]
-> На відміну від оригінальної версії, цей форк адаптований для стабільної роботи в headless/SSH-сесіях та локальних home-лабораторіях.
+> Unlike the original version, this fork is adapted for stable operation in headless/SSH sessions and local home labs.
 
-*   📂 **Мультифайлове редагування** — Редагує декілька файлів одночасно у вашому робочому просторі з попереднім підтвердженням змін.
-*   🔒 **Безпечні Shell-команди** — Виконує будь-які термінальні команди у вбудованому Docker-контейнері (пісочниці) або на хост-системі.
-*   🧠 **Багатокрокові міркування (PAV)** — Самостійно будує план виконання завдання, тестує код і виправляє власні помилки.
-*   💾 **Постійна історія розмов** — Зберігає повний контекст розмови та стан робочого простору між сесіями.
-*   🔌 **Система плагінів** — Розширюйте можливості агента за допомогою кастомних *Skills* та MCP-серверів (Model Context Protocol).
+*   📂 **Multi-file Editing** — Edits multiple files simultaneously in your workspace with prior confirmation of changes.
+*   🔒 **Secure Shell Commands** — Executes any terminal commands in the built-in Docker container (sandbox) or on the host system.
+*   🧠 **Multi-step Reasoning (PAV)** — Independently builds a task execution plan, tests code, and debugs its own errors.
+*   💾 **Persistent Conversation History** — Saves the complete conversation context and workspace state between sessions.
+*   🔌 **Plugin System** — Extend the agent's capabilities with custom *Skills* and MCP (Model Context Protocol) servers.
 
 ---
 
-## ⚙️ Конфігурація
+## ⚙️ Configuration
 
-### 1. Конфігурація проєкту (`.antigravity.md`)
-Створіть файл `.antigravity.md` у корені вашого проєкту, щоб передати ШІ-агенту специфічний контекст та правила розробки:
+### 1. Project Configuration (`.antigravity.md`)
+Create an `.antigravity.md` file in the root of your project to provide specific context and development rules to the AI agent:
 
 ```markdown
-# Контекст проєкту
+# Project Context
 
-- Цей проєкт використовує FastAPI та Pydantic v2.
-- Завжди використовуйте `model_dump()` замість застарілого `dict()`.
-- СУВОРЕ ПРАВИЛО: Жодних хардкод-паролів у коді. Всі секрети імпортувати з `.env`.
+- This project uses FastAPI and Pydantic v2.
+- Always use `model_dump()` instead of the deprecated `dict()`.
+- STRICT RULE: No hardcoded passwords in code. Import all secrets from `.env`.
 ```
 
-### 2. Глобальні налаштування (`~/.gemini/settings.json`)
-Конфігураційний файл керує поведінкою інтерфейсу та MCP-серверами:
+### 2. Global Settings (`~/.gemini/settings.json`)
+The configuration file controls the UI behavior and MCP servers:
 
 ```json
 {
@@ -108,129 +108,129 @@ install.cmd
 }
 ```
 
-### 3. Спеціалізовані агенти (`~/.antigravity/agents/`)
-Ви можете описувати кастомні ролі та інструкції для ШІ-агентів у форматі YAML:
+### 3. Specialized Agents (`~/.antigravity/agents/`)
+You can describe custom roles and instructions for AI agents in YAML format:
 
 ```yaml
 # ~/.antigravity/agents/security-reviewer.yaml
 name: security-reviewer
-description: "Аналізує код на вразливості перед комітом"
+description: "Analyzes code for vulnerabilities before commit"
 instructions: |
-  Перевіряй зміни на:
-  - OWASP Top 10 вразливості
-  - Витік API ключів чи секретів
-  - Правильність налаштування firewall/nftables
+  Check changes for:
+  - OWASP Top 10 vulnerabilities
+  - Leakage of API keys or secrets
+  - Correctness of firewall/nftables configuration
 ```
 
 ---
 
-## 🔐 Способи авторизації
+## 🔐 Authentication Methods
 
-| Метод | Команда / Змінна | Обмеження та особливості |
+| Method | Command / Variable | Limitations & Features |
 | :--- | :--- | :--- |
-| **Google Auth (Browser)** | Автоматично при першому `agy` | Стандартний вхід. Безкоштовний ліміт: 60 з/хв, 1000 з/добу |
-| **API Key (Offline)** | `export GEMINI_API_KEY="X"` | Рекомендовано для серверів та автоматизації |
-| **Vertex AI** | `export GOOGLE_GENAI_USE_VERTEXAI=true` | Enterprise-рівень з хмарною інфраструктурою Google Cloud |
-| **Вихід з профілю** | `/logout` | Очищення локальних токенів сесії |
+| **Google Auth (Browser)** | Automatically on first `agy` | Standard login. Free limit: 60 req/min, 1000 req/day |
+| **API Key (Offline)** | `export GEMINI_API_KEY="X"` | Recommended for servers and automation |
+| **Vertex AI** | `export GOOGLE_GENAI_USE_VERTEXAI=true` | Enterprise level with Google Cloud cloud infrastructure |
+| **Sign Out** | `/logout` | Clearing local session tokens |
 
 ---
 
-## 🔧 Довідка команд
+## 🔧 Command Reference
 
-### Командний рядок
+### Command Line
 ```bash
-agy                              # Запустити інтерактивну сесію
-agy -p "Запит"                   # Одноразове виконання без входу в чат
-agy -c                           # Продовжити останню незавершену розмову
-agy --conversation <ID>          # Завантажити сесію за конкретним ідентифікатором
-agy --sandbox                    # Запустити в ізольованому Docker-контейнері
-agy update                       # Оновити бінарний файл до останньої версії
-agy plugin list                  # Список встановлених плагінів
+agy                              # Start an interactive session
+agy -p "Prompt"                  # One-time execution without entering chat
+agy -c                           # Continue the last incomplete conversation
+agy --conversation <ID>          # Load a session by specific ID
+agy --sandbox                    # Run in an isolated Docker container
+agy update                       # Update binary to the latest version
+agy plugin list                  # List installed plugins
 ```
 
-### Slash-команди в інтерфейсі чату
-*   `/help` — Довідка з доступних інструментів.
-*   `/settings` — Інтерактивне налаштування параметрів.
-*   `/usage` — Статистика витрачених токенів та квоти.
-*   `/diff` — Перегляд поточних незбережених змін у проєкті.
-*   `/statusline` — Налаштування відображення статус-бару терміналу.
+### Slash Commands in Chat Interface
+*   `/help` — Help on available tools.
+*   `/settings` — Interactive settings configuration.
+*   `/usage` — Statistics of spent tokens and quota.
+*   `/diff` — View current unsaved changes in the project.
+*   `/statusline` — Configure terminal status line display.
 
 ---
 
-## 🔄 Злиття та міграція з Gemini CLI
+## 🔄 Migration from Gemini CLI
 
 > [!WARNING]
-> Оригінальний Gemini CLI (`gemini`) припиняє підтримку для non-enterprise акаунтів **18 червня 2026**. Перехід на Antigravity CLI є обов'язковим.
+> The original Gemini CLI (`gemini`) is deprecating support for non-enterprise accounts on **June 18, 2026**. Migration to Antigravity CLI is required.
 
-### Кроки для швидкого переходу
-1. Встановіть новий клієнт: `curl -fsSL https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/install.sh | bash`
-2. Перейменуйте локальні файли конфігурації:
+### Steps for Quick Transition
+1. Install the new client: `curl -fsSL https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/install.sh | bash`
+2. Rename local configuration files:
    ```bash
    mv GEMINI.md .antigravity.md
    mv ~/.gemini/agents/ ~/.antigravity/agents/
    ```
-3. Оновіть CI/CD конфігурації в GitHub Actions, замінивши виклики `gemini` на `agy`.
-4. Видаліть стару бібліотеку: `npm uninstall -g @google/gemini-cli`
+3. Update CI/CD configurations in GitHub Actions, replacing `gemini` calls with `agy`.
+4. Uninstall the old library: `npm uninstall -g @google/gemini-cli`
 
-### Порівняльна таблиця
+### Comparison Table
 
-| Характеристика | Gemini CLI (Застарілий) | Antigravity CLI (Сучасний) |
+| Feature | Gemini CLI (Legacy) | Antigravity CLI (Modern) |
 | :--- | :--- | :--- |
-| **Платформа розробки** | Node.js / TypeScript | Go (Native Compiled Binary) |
-| **Назва команди** | `gemini` | `agy` |
-| **Швидкість старту** | ~1.2 сек (запуск Node.js) | **~0.05 сек (миттєвий нативний старт)** |
-| **Файл конфігурації** | `GEMINI.md` | `.antigravity.md` |
-| **Авто-оновлення** | Через `npm update` | Вбудований механізм self-update |
-| **Статус підтримки** | ⛔ EOL (18.06.2026) | ✅ Активна розробка (Upstream) |
+| **Development Platform** | Node.js / TypeScript | Go (Native Compiled Binary) |
+| **Command Name** | `gemini` | `agy` |
+| **Startup Speed** | ~1.2s (Node.js startup) | **~0.05s (instant native startup)** |
+| **Configuration File** | `GEMINI.md` | `.antigravity.md` |
+| **Auto-update** | Via `npm update` | Built-in self-update mechanism |
+| **Support Status** | ⛔ EOL (June 18, 2026) | ✅ Active Development (Upstream) |
 
 ---
 
-## 📁 Структура репозиторію
+## 📁 Repository Structure
 
 ```
 antigravity-cli/
-├── install.sh           # Інсталятор для Linux/macOS (офлайн/онлайн)
-├── install.ps1          # Інсталятор для Windows PowerShell (офлайн/онлайн)
-├── install.cmd          # Інсталятор для Windows CMD
-├── Makefile             # Автоматизовані цілі (make install/reinstall/uninstall)
-├── .antigravity.md      # Шаблон файлу контексту проєкту
-├── packages/            # Локальний офлайн-дистрибутив
-│   ├── manifests/       # Маніфести версій для всіх платформ
-│   └── binaries/        # (Створюється вручну для офлайн-режиму)
-└── CHANGELOG.md         # Журнал версій та релізів
+├── install.sh           # Installer for Linux/macOS (offline/online)
+├── install.ps1          # Installer for Windows PowerShell (offline/online)
+├── install.cmd          # Installer for Windows CMD
+├── Makefile             # Automation targets (make install/reinstall/uninstall)
+├── .antigravity.md      # Project context file template
+├── packages/            # Local offline distribution
+│   ├── manifests/       # Version manifests for all platforms
+│   └── binaries/        # (Created manually for offline mode)
+└── CHANGELOG.md         # Changelog and release log
 ```
 
 ---
 
-## 🤝 Спільнота та розробка (Contributing)
+## 🤝 Contributing & Community
 
-Цей репозиторій є незалежним ком'юніті-форком оригінального проєкту [google-antigravity/antigravity-cli](https://github.com/google-antigravity/antigravity-cli).
+This repository is an independent community fork of the original [google-antigravity/antigravity-cli](https://github.com/google-antigravity/antigravity-cli) project.
 
-**Наші покращення:**
-*   🇺🇦 Повна українська локалізація документації та гайдів.
-*   📦 Автономність: можливість офлайн-встановлення без завантажень з Google API.
-*   🛠️ Зручність: додано `Makefile` для спрощеного життєвого циклу інструменту.
-*   🛡️ Безпека: регулярні баг-фікси та покращення роботи в пісочниці (сандбоксі).
+**Our Enhancements:**
+*   🌍 Multi-language localization support for docs and guides.
+*   📦 Autonomy: offline installation capability without Google API downloads.
+*   🛠️ Convenience: added `Makefile` for a simplified tool lifecycle.
+*   🛡️ Security: regular bug fixes and improvements to the sandbox environment.
 
 ---
 
-## 📜 Юридичний статус та дисклеймер (Legal & Trademark Notice)
+## 📜 Legal & Trademark Notice
 
-*   **Офіційні посилання**: [Офіційний репозиторій документації](https://github.com/google-antigravity/antigravity-cli) · [Офіційна кодова база CLI](https://github.com/google-gemini/gemini-cli) · [Офіційний сайт](https://antigravity.google)
-*   **Правила використання**: [antigravity.google/terms](https://antigravity.google/terms) · [policies.google.com/privacy](https://policies.google.com/privacy)
+*   **Official Links**: [Official Documentation Repo](https://github.com/google-antigravity/antigravity-cli) · [Official CLI Codebase](https://github.com/google-gemini/gemini-cli) · [Official Website](https://antigravity.google)
+*   **Terms of Use**: [antigravity.google/terms](https://antigravity.google/terms) · [policies.google.com/privacy](https://policies.google.com/privacy)
 
 > [!IMPORTANT]
-> **Правовий статус форку:**
-> Цей репозиторій є незалежною некомерційною копією (Community Fork) оригінального клієнта. Він **не є** офіційним продуктом компанії Google LLC. Google LLC не несе відповідальності за працездатність, модифікації або безпеку цього форку.
+> **Fork Legal Status:**
+> This repository is an independent non-commercial copy (Community Fork) of the original client. It **is not** an official product of Google LLC. Google LLC is not responsible for the performance, modifications, or safety of this fork.
 > 
-> **Ліцензування та авторські права:**
-> Оригінальне програмне забезпечення розповсюджується під ліцензією [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). Весь оригінальний код є інтелектуальною власністю **Copyright © 2025 Google LLC**.
+> **Licensing & Copyrights:**
+> The original software is distributed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). All original code is the intellectual property of **Copyright © 2025 Google LLC**.
 > 
-> **Використання торгових марок:**
-> Назва "Antigravity CLI" та пов'язані логотипи використовуються в межах дозволеного використання (Customary Use) виключно для опису походження, сумісності та функціонального призначення програмного забезпечення. Цей проєкт не претендує на володіння будь-якими торговими марками Google LLC.
+> **Trademark Use:**
+> The name "Antigravity CLI" and associated logos are used within Customary Use limits solely to describe the origin, compatibility, and functional purpose of the software. This project does not claim ownership of any Google LLC trademarks.
 > 
-> **Обмеження відповідальності (Disclaimer of Warranty):**
-> Програмне забезпечення надається на умовах «ЯК Є» (AS IS), БЕЗ БУДЬ-ЯКИХ ГАРАНТІЙ, явних чи неявних. Ви берете на себе всю відповідальність та ризики, пов'язані з його використанням.
+> **Disclaimer of Warranty:**
+> The software is provided on an "AS IS" basis, WITHOUT WARRANTIES OF ANY KIND, either express or implied. You assume all responsibility and risks associated with its use.
 
 > [!CAUTION]
-> ШІ-агенти для кодування працюють автономно. Завжди уважно перевіряйте пропоновані diff-блоки та команди перед підтвердженням виконання, особливо при роботі з системними файлами чи конфігурацією фаєрволу.
+> AI coding agents work autonomously. Always carefully review the proposed diff blocks and commands before confirming execution, especially when working with system files or firewall configuration.
