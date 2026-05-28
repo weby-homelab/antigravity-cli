@@ -5,6 +5,47 @@ This directory contains an example script (`title.sh`) that demonstrates how to 
 For more details on how to use and configure the title script, please refer to the official public documentation:
 [https://antigravity.google/docs/cli-title](https://antigravity.google/docs/cli-title)
 
+## Quick Start
+
+### Option 1: Automatic Setup (Recommended)
+
+Run the included setup script from the root of the repository:
+
+```bash
+bash examples/title/setup.sh
+```
+
+This script will automatically:
+1. Copy `title.sh` to your platform's global settings directory (so it stays configured even if you move or delete this repository).
+2. Configure and enable it in your global `settings.json` file.
+
+### Option 2: Manual configuration
+
+1. Copy `title.sh` to a directory of your choice.
+2. Edit your `settings.json` file to point `title.command` to the absolute path of `title.sh` and set `title.enabled` to `true`:
+
+```json
+{
+  "title": {
+    "command": "/absolute/path/to/title.sh",
+    "enabled": true
+  }
+}
+```
+
+**Settings file locations:**
+
+| Platform | Path |
+| :--- | :--- |
+| Linux | `~/.gemini/antigravity-cli/settings.json` |
+| macOS | `~/Library/Application Support/antigravity-cli/settings.json` |
+| Windows | `%APPDATA%\antigravity-cli\settings.json` |
+
+> [!IMPORTANT]
+> The `command` field must be an **absolute path** to the script. Relative paths and `~` expansion are not supported.
+
+After saving, restart `agy` for changes to take effect.
+
 ## How it works
 
 The `title.sh` script reads a JSON payload from standard input, which contains real-time information about the agent's state and context. It then:

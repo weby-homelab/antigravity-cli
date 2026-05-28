@@ -64,6 +64,67 @@ The CLI authenticates via the system keyring, falling back to Google Sign-In if 
 
 ---
 
+## Customization
+
+### Custom Status Line
+
+By default, the CLI displays a minimal status bar showing only `? for shortcuts` and the current model name. You can replace it with a fully dynamic status line that shows agent state, context window usage, Git branch, active subagents, and more.
+
+**Quick setup** — automatically copy and configure the statusline script:
+
+```bash
+bash examples/statusline/setup.sh
+```
+
+Or configure it manually in your settings (accessible via `/settings` in the CLI, or by editing the settings file directly):
+
+```json
+{
+  "statusLine": {
+    "command": "/absolute/path/to/statusline.sh",
+    "enabled": true
+  }
+}
+```
+
+> [!TIP]
+> The settings file location varies by platform:
+> - **Linux**: `~/.gemini/antigravity-cli/settings.json`
+> - **macOS**: `~/Library/Application Support/antigravity-cli/settings.json`
+> - **Windows**: `%APPDATA%\antigravity-cli\settings.json`
+>
+> You can also open settings interactively by typing `/settings` inside the CLI.
+
+The script receives a JSON payload on stdin with the current agent state and outputs formatted ANSI text. See [`examples/statusline/`](examples/statusline/) for the full reference implementation.
+
+### Custom Window Title
+
+Similarly, you can set a dynamic terminal window title that reflects the agent's current state (thinking, tool use, idle) and workspace.
+
+**Quick setup** — automatically copy and configure the title script:
+
+```bash
+bash examples/title/setup.sh
+```
+
+Or configure it manually in your settings:
+
+```json
+{
+  "title": {
+    "command": "/absolute/path/to/title.sh",
+    "enabled": true
+  }
+}
+```
+
+See [`examples/title/`](examples/title/) for details.
+
+> [!NOTE]
+> Both scripts require [`jq`](https://jqlang.org/) to be installed. Most Linux distributions include it by default; on macOS, install via `brew install jq`.
+
+---
+
 ## Terms of Service & Data Use
 
 > [!WARNING]
