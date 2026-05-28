@@ -1,10 +1,15 @@
 # Custom Status Line
 
-This directory contains a reference implementation (`statusline.sh`) for a custom, dynamic status line for the Antigravity CLI.
+This directory contains reference implementations for a custom, dynamic status line for the Antigravity CLI across different shell environments:
+
+1. **`statusline.sh`** (Bash/Zsh - Linux/macOS)
+2. **`statusline.js`** (Node.js - Cross-platform: Windows/Linux/macOS)
+3. **`statusline.ps1`** (PowerShell - Windows PowerShell or PowerShell Core `pwsh`)
+4. **`statusline.fish`** (Fish shell - Linux/macOS)
 
 ## Quick Start
 
-### Option 1: Automatic Setup (Recommended)
+### Option 1: Automatic Setup (Recommended for Bash/Zsh)
 
 Run the included setup script from the root of the repository:
 
@@ -18,13 +23,45 @@ This script will automatically:
 
 ### Option 2: Manual configuration
 
-1. Copy `statusline.sh` to a directory of your choice.
-2. Edit your `settings.json` file to point `statusLine.command` to the absolute path of `statusline.sh` and set `statusLine.enabled` to `true`:
+1. Copy the script corresponding to your shell to a directory of your choice.
+2. Edit your `settings.json` file to point `statusLine.command` to the absolute path of the script and set `statusLine.enabled` to `true`:
 
+#### Bash/Zsh (Linux/macOS)
 ```json
 {
   "statusLine": {
     "command": "/absolute/path/to/statusline.sh",
+    "enabled": true
+  }
+}
+```
+
+#### Node.js (Cross-platform)
+```json
+{
+  "statusLine": {
+    "command": "node /absolute/path/to/statusline.js",
+    "enabled": true
+  }
+}
+```
+
+#### PowerShell (Windows / pwsh)
+```json
+{
+  "statusLine": {
+    "command": "powershell.exe -ExecutionPolicy Bypass -File C:\\absolute\\path\\to\\statusline.ps1",
+    "enabled": true
+  }
+}
+```
+*For PowerShell Core, use `pwsh.exe` or `pwsh` instead of `powershell.exe`.*
+
+#### Fish Shell
+```json
+{
+  "statusLine": {
+    "command": "/absolute/path/to/statusline.fish",
     "enabled": true
   }
 }
@@ -47,7 +84,7 @@ After saving, restart `agy` for changes to take effect.
 
 The CLI pipes a JSON payload into the script's stdin on each state change. The script:
 
-1. Extracts fields like `agent_state`, `vcs` info, `context_window` usage, and `terminal_width` using `jq`.
+1. Extracts fields like `agent_state`, `vcs` info, `context_window` usage, and `terminal_width`.
 2. Computes visual indicators (e.g., a Unicode progress bar for context window usage).
 3. Formats the output using standard ANSI 16-color codes.
 4. Dynamically adjusts the layout based on the available terminal width (single-line for wide terminals, two-line for narrower ones).
@@ -69,7 +106,8 @@ The CLI pipes a JSON payload into the script's stdin on each state change. The s
 
 ### Prerequisites
 
-- [`jq`](https://jqlang.org/) must be installed and available in `$PATH`.
+- **Bash (`statusline.sh`) & Fish (`statusline.fish`)**: Require [`jq`](https://jqlang.org/) to be installed and available in `$PATH`.
+- **Node.js (`statusline.js`) & PowerShell (`statusline.ps1`)**: Have **zero external dependencies** and work out-of-the-box.
 
 ## Examples
 
@@ -84,7 +122,7 @@ The CLI pipes a JSON payload into the script's stdin on each state change. The s
 
 ## Writing your own
 
-You can use `statusline.sh` as a starting point. The only contract is:
+You can use any of the provided scripts as a starting point. The only contract is:
 
 1. Read JSON from stdin.
 2. Write one or more lines of ANSI-formatted text to stdout.
