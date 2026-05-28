@@ -209,6 +209,49 @@ function Invoke-Install {
         # The binary is successfully copied and functional on disk.
     }
 
+    # 8. Automatic Status Line & Window Title Setup (Enable by default)
+    Write-Host "⠋ Configuring custom statusline and window title by default..."
+    $configDir = Join-Path $env:APPDATA "antigravity-cli"
+    if (-not (Test-Path $configDir)) {
+        New-Item -ItemType Directory -Path $configDir -Force | Out-Null
+    }
+
+    $statusScript = Join-Path $configDir "statusline.sh"
+    $titleScript = Join-Path $configDir "title.sh"
+
+    # Copy statusline.sh and title.sh if local, or download them
+    if ($localMode -and (Test-Path (Join-Path $scriptDir "examples\statusline\statusline.sh"))) {
+        Copy-Item (Join-Path $scriptDir "examples\statusline\statusline.sh") $statusScript -Force
+        Copy-Item (Join-Path $scriptDir "examples\title\title.sh") $titleScript -Force
+    } else {
+        $webClient = New-Object System.Net.WebClient
+        try {
+            $webClient.DownloadFile("https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/examples/statusline/statusline.sh", $statusScript)
+            $webClient.DownloadFile("https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/examples/title/title.sh", $titleScript)
+        } catch {}
+    }
+
+    # Configure settings.json
+    $settingsFile = Join-Path $configDir "settings.json"
+    $settings = @{}
+    if (Test-Path $settingsFile) {
+        try {
+            $settings = Get-Content $settingsFile -Raw | ConvertFrom-Json -AsHashtable
+        } catch {}
+    }
+
+    $settings["statusLine"] = @{
+        "command" = $statusScript
+        "enabled" = $true
+    }
+    $settings["title"] = @{
+        "command" = $titleScript
+        "enabled" = $true
+    }
+
+    $settings | ConvertTo-Json -Depth 5 | Out-File $settingsFile -Encoding utf8 -Force
+    Write-Host "✓ Custom statusline and terminal title configured and enabled by default."
+
     $script:installExitCode = 0
     return
 }

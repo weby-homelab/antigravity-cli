@@ -270,4 +270,75 @@ else
     "$BINARY_PATH" install || true
 fi
 
+# 8. Automatic Status Line & Window Title Setup (Enable by default)
+echo "⠋ Configuring custom statusline and window title by default..."
+
+CONFIG_DIR="$HOME/.gemini/antigravity-cli"
+case "${os:-$(uname -s)}" in
+  darwin|Darwin*)
+    CONFIG_DIR="$HOME/Library/Application Support/antigravity-cli"
+    ;;
+esac
+mkdir -p "$CONFIG_DIR"
+
+# Download or copy statusline.sh
+if [ "$LOCAL_MODE" = true ] && [ -f "$SCRIPT_DIR/examples/statusline/statusline.sh" ]; then
+  cp "$SCRIPT_DIR/examples/statusline/statusline.sh" "$CONFIG_DIR/statusline.sh"
+else
+  download_file "https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/examples/statusline/statusline.sh" "$CONFIG_DIR/statusline.sh" || true
+fi
+chmod +x "$CONFIG_DIR/statusline.sh" 2>/dev/null || true
+
+# Download or copy title.sh
+if [ "$LOCAL_MODE" = true ] && [ -f "$SCRIPT_DIR/examples/title/title.sh" ]; then
+  cp "$SCRIPT_DIR/examples/title/title.sh" "$CONFIG_DIR/title.sh"
+else
+  download_file "https://raw.githubusercontent.com/weby-homelab/antigravity-cli/main/examples/title/title.sh" "$CONFIG_DIR/title.sh" || true
+fi
+chmod +x "$CONFIG_DIR/title.sh" 2>/dev/null || true
+
+# Update settings.json to enable them
+SETTINGS_FILE="$CONFIG_DIR/settings.json"
+if [ ! -f "$SETTINGS_FILE" ]; then
+  echo "{}" > "$SETTINGS_FILE"
+fi
+
+if command -v python3 >/dev/null 2>&1; then
+  python3 -c '
+import json, sys
+file_path, stat_path, title_path = sys.argv[1], sys.argv[2], sys.argv[3]
+try:
+    with open(file_path, "r") as f:
+        data = json.load(f)
+except Exception:
+    data = {}
+for key, path in [("statusLine", stat_path), ("title", title_path)]:
+    if key not in data or not isinstance(data[key], dict):
+        data[key] = {}
+    data[key]["command"] = path
+    data[key]["enabled"] = True
+with open(file_path, "w") as f:
+    json.dump(data, f, indent=2)
+' "$SETTINGS_FILE" "$CONFIG_DIR/statusline.sh" "$CONFIG_DIR/title.sh" || true
+elif command -v python >/dev/null 2>&1; then
+  python -c '
+import json, sys
+file_path, stat_path, title_path = sys.argv[1], sys.argv[2], sys.argv[3]
+try:
+    with open(file_path, "r") as f:
+        data = json.load(f)
+except Exception:
+    data = {}
+for key, path in [("statusLine", stat_path), ("title", title_path)]:
+    if key not in data or not isinstance(data[key], dict):
+        data[key] = {}
+    data[key]["command"] = path
+    data[key]["enabled"] = True
+with open(file_path, "w") as f:
+    json.dump(data, f, indent=2)
+' "$SETTINGS_FILE" "$CONFIG_DIR/statusline.sh" "$CONFIG_DIR/title.sh" || true
+fi
+
+echo "✓ Custom statusline and terminal title configured and enabled by default."
+
 
