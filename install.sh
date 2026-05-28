@@ -111,7 +111,7 @@ parse_json_key() {
 
 # Check for local installer package files
 LOCAL_MODE=false
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-}")" && pwd)"
 LOCAL_MANIFEST="$SCRIPT_DIR/packages/manifests/$platform.json"
 
 version=""
