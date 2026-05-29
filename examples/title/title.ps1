@@ -1,13 +1,23 @@
 # ─── Read JSON from stdin ────────────────────────────────────────────────────
-$inputJson = [Console]::In.ReadToEnd()
+param(
+    [Parameter(ValueFromPipeline)]
+    [string]$inputJson
+)
+
+if ([string]::IsNullOrWhiteSpace($inputJson)) {
+    # Try reading from Console stdin (for redirected stdin from Go/agy.exe)
+    $inputJson = [Console]::In.ReadToEnd()
+}
+
 if ([string]::IsNullOrWhiteSpace($inputJson)) {
     $inputJson = '{}'
 }
 
 try {
-    $data = ConvertFrom-Json $inputJson -ErrorAction SilentlyContinue
+    $data = ConvertFrom-Json $inputJson -ErrorAction Stop
 } catch {
-    $data = $null
+    Write-Output "🤖 ERROR: Invalid JSON ($($_.Exception.Message))"
+    exit
 }
 
 if ($null -eq $data) {

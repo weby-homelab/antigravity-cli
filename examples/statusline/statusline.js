@@ -15,7 +15,9 @@ let data = {};
 try {
   data = JSON.parse(rawData || '{}');
 } catch (e) {
-  // Silence JSON parse errors
+  // Output a clear error message in the statusline to help debugging
+  console.log(`\x1b[31m● ERROR: Invalid JSON input to statusline.js (${e.message})\x1b[0m`);
+  process.exit(0);
 }
 
 // ─── ANSI Helpers (Standard 16-color palette only) ───────────────────────────

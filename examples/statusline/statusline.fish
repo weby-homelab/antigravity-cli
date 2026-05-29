@@ -136,9 +136,9 @@ end
 set -l SB ""
 if test "$SANDBOX" = "true"
     if test "$SANDBOX_NET" = "true"
-        set SB "$FG_GRAY🛡️ sandbox $FG_BRIGHT_GREEN$B"ON (net)"$R"
+        set SB "$FG_GRAY🛡️ sandbox $FG_BRIGHT_GREEN$B ON (net)$R"
     else
-        set SB "$FG_GRAY🛡️ sandbox $FG_BRIGHT_GREEN$B"ON (no-net)"$R"
+        set SB "$FG_GRAY🛡️ sandbox $FG_BRIGHT_GREEN$B ON (no-net)$R"
     end
 else
     set SB "$FG_GRAY🛡️ sandbox off$R"
@@ -178,10 +178,10 @@ end
 
 # Stats & Metadata
 set -l PCT_FMT (printf "%.1f" $USED_PCT)
-set -l CTX_BAR "$FG_GRAY"ctx "$BAR_COLOR$BAR $NUM_COLOR$PCT_FMT%$R"
-set -l ART_FMT "$FG_GRAY"📦 "$NUM_COLOR$ARTIFACTS$R"
-set -l SUB_FMT "$FG_GRAY"🤖 "$NUM_COLOR$SUBAGENTS$R"
-set -l BG_FMT "$FG_GRAY"⏳ "$NUM_COLOR$BG_TASKS$R"
+set -l CTX_BAR "$FG_GRAY ctx $BAR_COLOR$BAR $NUM_COLOR$PCT_FMT%$R"
+set -l ART_FMT "$FG_GRAY 📦 $NUM_COLOR$ARTIFACTS$R"
+set -l SUB_FMT "$FG_GRAY 🤖 $NUM_COLOR$SUBAGENTS$R"
+set -l BG_FMT "$FG_GRAY ⏳ $NUM_COLOR$BG_TASKS$R"
 
 set -l DIR_FMT ""
 if test -n "$CWD_SHORT"

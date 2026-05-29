@@ -14,7 +14,8 @@ let data = {};
 try {
   data = JSON.parse(rawData || '{}');
 } catch (e) {
-  // Silence JSON parse errors
+  console.log(`🤖 ERROR: Invalid JSON (${e.message})`);
+  process.exit(0);
 }
 
 const state = data.agent_state || "idle";
