@@ -2,6 +2,102 @@
 
 The terminal-first surface to interact with Antigravity agents. Stay in your flow without context switching.
 
+## 1.1.11
+
+- Added a Vim editing mode, off by default and switched on from `/settings` under `Editor Mode`, bringing modal editing to the prompt with Normal, Insert, Visual and Visual Line modes, a mode badge in the status line and a Vim tab in `/help`, and covering the `h`/`j`/`k`/`l`, `w`/`b`/`e` and `W`/`B`/`E` motions, the `0`/`^`/`$`/`gg`/`G` boundaries, the `f`/`F`/`t`/`T` character searches with their `;` and `,` repeats, the `i`/`a`/`I`/`A` insert entries, the `d`/`c`/`y` operators alongside `x`, `D` and `C` filling the unnamed register for `p`, and the `iw`/`aw`/`iW`/`aW`/`ip`/`ap` text objects.
+- Added Vim-aware submission so a prompt can be sent without leaving modal editing, through an `Editor Mode > Insert First` toggle that opens the prompt in Insert mode where a bare `Enter` submits and a modified key such as `shift+enter` or `ctrl+j` inserts a newline, `ctrl+s` and `ctrl+enter` keys that submit from Normal mode, an `Enter` binding available as `vim.insert.submit`, and the full set of `vim.*` scopes in `keybindings.json` for remapping any of it.
+- Added Vim editing to the comment editors in the diff and artifact-detail views, whose footer hints follow the active mode rather than showing one fixed set of bindings, and made a collapsed block behave as a single unit under Vim motions.
+- Added non-interactive answers for the read-only slash commands in print mode, so `-p "/usage"`, `/quota`, `/credits`, `/model`, `/effort` and `/skills` emit one tab-separated record per line — or a structured payload under `--output-format json` and `stream-json` — without starting an agent turn, spending quota, or leaving a conversation behind.
+- Added an explicit refusal for the remaining interactive-only slash commands in print mode, which previously fell through as literal prompt text and let the model answer as though the command had run, so `-p "/clear"` reported the context cleared while nothing was cleared; each now fails with the flag or subcommand that replaces it.
+- Improved plugin enable and disable so `config.json` is the only place enablement lives, seeded once from each plugin's manifest, which stops a plugin that later ships `"disabled": true` from switching itself off under someone who was already running it and stops a shipped-default change from moving every user on the next release.
+- Improved the artifact detail view by wrapping long lines in code files instead of clipping them at the right edge.
+- Improved model retries by honoring the server-supplied retry delay instead of the client's own backoff, so a retry after a rate limit or an overload waits exactly as long as the server asks.
+- Improved model-loading errors so a permission failure such as a missing license or a missing IAM role is shown as itself, with a troubleshooting link, instead of a generic failure during the run.
+- Fixed an allowlist entry that tokenizes to zero command words — `command(time)`, a comment-only entry, or an empty compound such as `()` — matching every command and silently auto-approving anything the agent ran; such an entry now matches nothing.
+- Fixed commands being auto-approved while the session was in request-review or strict permission mode.
+- Fixed admin controls being skipped for MCP servers at startup, where a fetch made before authentication cached "admin controls not applicable" and allowed every server for the next five minutes, and fixed the built-in Chrome DevTools MCP server being blocked outright by admin controls.
+- Fixed MCP progress callbacks being dropped and the task log file not being initialized, so long-running MCP tool calls report progress again.
+- Fixed a slash command receiving the collapsed `[Pasted text #N]` placeholder instead of the pasted content when its argument was pasted into the prompt.
+- Fixed the prompt saving the typed prefix rather than the completed command name to history when an autocompleted slash command was submitted, so up-arrow recall replays what actually ran, and made an alias require an exact match before auto-executing so a partial alias fills the prompt instead of running a command you did not finish typing.
+- Fixed an asynchronous settings refresh re-enabling the feedback survey partway through a print-mode run that had switched it off.
+- Fixed spurious "Out of credits" errors, where an empty credits response was read as a balance of zero.
+- Fixed the "Use AI Credits" setting being offered to accounts signed in through a Google Cloud project or application default credentials, where it does not apply.
+
+## 1.1.10
+
+- Added Business sign-in for Gemini Enterprise accounts, so you can authenticate with a Google Cloud project under Google Cloud terms, use a license seat allocated or auto-assigned from your organization's GE-Standard or GE-Plus subscription, run inference in a chosen region, and have your organization's administrator controls applied to various features.
+- Added Workforce Identity Federation sign-in for enterprise users, available as the `Use advanced SSO config` option on the Google Cloud sign-in screen, so organizations that federate identity through an external provider can authenticate with their own identity provider.
+- Added sign-in with Application Default Credentials so you can use Agent Platform.
+- Added a non-blocking advisory banner when the same conversation is already open in another CLI instance on the same machine, pointing at `/fork` so two sessions no longer interleave writes into one trajectory.
+- Improved the terminal sandbox by granting read-only rather than writable access to a Git repository's `.git` directory, so the agent can inspect repository metadata without being able to rewrite it from inside the sandbox.
+- Improved hook ordering so hooks defined in `hooks.json` run before the built-in termination checks, which lets `PostInvocation` hooks observe the final invocation of a turn and lets `Stop` hooks run at all instead of sitting unreachable behind the built-ins.
+- Improved the `schedule` tool to accept `DurationSeconds` and `MaxIterations` when a model emits them as bare JSON numbers rather than strings, accepting integral values and rejecting non-integral ones with a clear error instead of failing the call.
+- Fixed `--model` and `--effort` being ignored in interactive sessions and in headless `-p` runs, where the flags were applied after model configuration had already been initialized so the run silently fell back to the persisted or default model.
+- Fixed a bare `--effort` resolving against the default model instead of the model you actually have selected, which could silently move you to a different model.
+- Fixed stopping a subagent tree stopping only the conversation it was invoked from, while every descendant subagent and the background tasks they owned kept running and the CLI still reported them as killed.
+- Fixed a forced-continuation deadlock where a coordinator waiting on active subagents or background tasks would loop injecting empty continue steps until it hit the invocation limit, wasting tokens and blocking progress.
+- Fixed the spacebar not toggling an option in multi-select prompts, including the `ask_question` dialog and the onboarding import checkbox, which left `x` as the only working toggle; the hint bar now advertises it.
+- Fixed the Left and Right arrow keys being captured to navigate the input box suggestion dropdown, so you can move the cursor and edit text again while suggestions are showing.
+- Fixed the model picker's "No models available" state rendering without its header and footer, so it now shows the standard chrome and an `esc` hint to go back.
+- Fixed tools that an MCP server marks to always run in the background executing as blocking calls that stalled the turn.
+- Fixed an MCP process leak when a server connection dropped unexpectedly.
+- Fixed the artifact viewer corrupting plain documents by horizontally clipping every document rather than only the diagram artifacts that need it.
+- Fixed the sandbox not recording blocked network requests when the command itself exited successfully, which hid the fact that a request had been denied.
+
+## 1.1.9
+
+- Added slash-command and skill expansion to print mode, so a headless run such as `-p "/my-skill review this diff"` now resolves and applies the skill instead of sending it as literal text, with `--disable-slash-commands` to opt out.
+- Improved interactive startup so a slow or hanging MCP server no longer stalls the first agent turn, loading MCP servers in the background for the interactive session while headless and one-shot runs keep blocking so their single scripted turn still sees the full toolset.
+- Improved permission grants so a pattern approved at a prompt is recorded for the rest of the conversation, letting later commands that match it run without prompting again.
+- Improved the default system temporary-directory grant to cover writes as well as reads, so agents no longer trigger a permission prompt when creating or updating files there.
+- Fixed stop hooks that always block hanging the agent forever; after a configurable number of consecutive continuations, the hook can no longer block and the turn ends normally.
+- Fixed `PostToolUse` hooks firing on non-tool steps such as user input and model responses, which also caused them to ignore their configured matchers.
+- Fixed slash commands not being recognized when separated from their arguments by a newline or tab, so a prompt starting with a command followed by a newline is now parsed as a command instead of being sent verbatim.
+- Fixed deleting into a collapsed paste placeholder removing one character at a time, which left a visible fragment in the prompt while the full pasted content was still submitted; the block is now deleted atomically.
+- Fixed the artifact viewer losing syntax highlighting when returning from the editor view, and returning to the wrong panel when exiting the artifact detail view.
+- Fixed the headless `stream-json` `init` event advertising tools that are not available in your build.
+- Fixed MCP servers forcing a full re-authentication after a dropped connection.
+
+## 1.1.8
+
+- Print mode (`-p` / `--print`) now supports structured, machine-readable output via the `--output-format` flag (`text` (default), `json`, or `stream-json`), so headless runs in CI, eval harnesses, and scripts can consume the CLI's output programmatically; these flags are now discoverable in `--help`.
+- Added the `stream-json` output format: a strongly-typed NDJSON event stream that emits typed `init`, `step_update`, and terminal `result` events with a stable, closed-vocabulary `step_type` discriminator, so consumers receive progress incrementally instead of waiting for the whole run to finish.
+- Added the `--json-schema` flag to enforce a custom JSON schema on the structured output, accepting either an inline schema string or a path to a schema file; for `stream-json` the schema applies to the final `result` event.
+- Enriched the structured stream with a `tool_info` object for each tool call (canonical tool name, parameters, and output) and a `subagent_info` payload for delegated subagents (including `conversation_id` and `log_uri`) so consumers can correlate child trajectories.
+- The JSON usage object emitted by `json` and `stream-json` now reports token accounting including `cache_read_tokens`, so non-interactive consumers can attribute prompt-cache hits.
+- Added a `copyOnSelect` setting (default on, toggleable in `/settings`) that controls whether releasing a mouse text-selection auto-copies it to the system clipboard in the TUI's altscreen rendering mode; disable it to stop the automatic copy on release — useful when the auto-copy is unwanted or corrupts certain payloads.
+- Improved compound-command permissions so an exact chained command (such as `git fetch && git rebase`) can be saved as an allow-always rule and no longer re-prompts on the next identical run.
+
+## 1.1.7
+
+- Improved permission prompts for compound shell commands so the full command is shown when any part of it needs approval.
+- Fixed disabled plugins still running their hooks and contributing other customizations, which could keep a broken hook active and break file-editing tools even after the plugin was turned off.
+- Fixed MCP OAuth against providers that do not strictly follow the spec (such as Salesforce and Atlassian) by relaxing issuer validation and including the `refresh_token` grant.
+- Fixed `/btw` failing with a "parent conversation not found" error when used as the very first action in a fresh session.
+- Fixed clipboard corruption of CJK and other non-ASCII text when copying on Windows.
+- Fixed print mode (`-p`) sending a prompt before the account-eligibility check finished.
+
+## 1.1.6
+
+- Custom Agents (Markdown Format). Added support for defining custom agents using Markdown files (`agent.md`) with YAML frontmatter and H1-delimited system prompts. Markdown agents support `mainAgent`, `subagent`, `hidden`, `inheritMcp`, and `commandExecutionPolicy` frontmatter fields for fine-grained control over agent behavior. Dynamically defined subagents (via `define_subagent`) now also write Markdown format so they resolve correctly on external builds.
+- Added an optional index argument to `/copy` so `/copy <n>` copies the n-th most recent response to the clipboard, while `/copy` and `/copy 1` still copy the latest.
+- Improved `/codesearch` to render results progressively as they stream in, showing a live count while loading and letting you cancel an in-flight search with `Esc` instead of blocking until the whole search finishes.
+- Improved default file access by granting read access to the system temporary directory out of the box, resolved correctly per platform, so agents no longer trigger permission prompts when reading temporary files.
+- Improved support for markdown-based custom agents so custom agent management and selection behave more consistently.
+- Improved customization discovery by sorting rules and discovered paths deterministically, preventing unstable prompt ordering and needless prompt-cache misses.
+- Improved overall reliability and stability across the CLI with additional hardening and fixes for intermittent failures in background tasks, print mode, and interactive flows.
+- Fixed switching from a custom agent back to the default agent via `/agents`, which previously failed silently and left the conversation stuck on the custom agent's persona.
+- Fixed a crash when a command was blocked by sandbox permissions before its output was captured, and cleaned up the permission approval and denial messages.
+- Fixed the artifact viewer emitting garbage escape bytes when cycling to image mode on terminals that are detected but cannot actually render Kitty graphics, such as iTerm2.
+- Fixed the first keystroke (such as `Esc`) being dropped when opening the first artifact view on some non-Kitty terminals.
+- Fixed conversation jitter and a stranded input box during streaming so transient markdown reflow no longer shifts the pending line and input box upward.
+- Fixed print mode (`-p`) surfacing the real conversation-creation failure instead of a misleading "no active conversation" error.
+- Fixed the message list dropping its header when rewinding or resetting conversation steps.
+- Fixed a background auto-updater double-spawn race where two processes could each spawn an updater within a single update window.
+- Fixed sandbox error reporting so blocked actions are recorded even when the network proxy is disabled.
+- Fixed the screen going blank after the authentication page.
+- Fixed the `ctrl+b` shortcut being hardcoded to background shell commands even when none were running, so a remapped `ctrl+b` is now respected whenever there are no running shell commands in the conversation.
+
 ## 1.1.5
 
 - Added a `/effort` command to view and change the current model's reasoning effort, with a left/right timeline-gauge picker and a direct `/effort <level>` form so you can trade latency for depth on the fly.
